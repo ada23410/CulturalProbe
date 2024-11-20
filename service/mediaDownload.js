@@ -1,42 +1,39 @@
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { uploadToFirebase } = require('./imageStorage');
-const client = require('./lineClient'); // Line 客戶端
 
-// 處理多媒體消息
-const processMedia = async (message, options = { saveToLocal: false, uploadToFirebase: false }) => {
+const downloadContent = async (messageId, accessToken, downloadPath) => {
   try {
-    const contentStream = await client.getMessageContent(message.id);
+    // 構造請求 URL
+    const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
 
-    if (options.saveToLocal) {
-      const localPath = path.join(__dirname, '../../downloads', `${message.id}.jpg`);
-      const writable = fs.createWriteStream(localPath);
-      contentStream.pipe(writable);
+    // 發送 GET 請求，帶上 Authorization Header
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // 提供 Channel Access Token
+      },
+      responseType: 'stream', // 獲取數據流
+    });
 
-      return new Promise((resolve, reject) => {
-        writable.on('finish', () => resolve(localPath));
-        writable.on('error', reject);
-      });
+    // 確保目錄存在
+    const dir = path.dirname(downloadPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
 
-    if (options.uploadToFirebase) {
-      const fileName = `uploads/${Date.now()}-${message.id}`;
-      const contentType =
-        message.type === 'image'
-          ? 'image/jpeg'
-          : message.type === 'video'
-          ? 'video/mp4'
-          : 'audio/m4a';
+    // 將數據流寫入文件
+    const writer = fs.createWriteStream(downloadPath);
+    response.data.pipe(writer);
 
-      const publicUrl = await uploadToFirebase(contentStream, fileName, contentType);
-      return publicUrl;
-    }
-
-    throw new Error('No valid processing option provided.');
+    // 返回 Promise，確保文件已保存完成
+    return new Promise((resolve, reject) => {
+      writer.on('finish', () => resolve(downloadPath));
+      writer.on('error', reject);
+    });
   } catch (error) {
-    console.error('多媒體處理失敗:', error);
-    throw new Error('多媒體處理失敗');
+    console.error('下載多媒體內容失敗:', error.message);
+    throw error;
   }
 };
 
-module.exports = { processMedia };
+module.exports = { downloadContent };

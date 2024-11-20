@@ -4,8 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-
-
 // 資料庫設定
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');

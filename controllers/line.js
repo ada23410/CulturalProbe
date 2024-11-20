@@ -1,6 +1,6 @@
 const client = require('../service/lineClient');
 const { saveText } = require('../models/textModel');
-const { processMedia } = require('../service/images')
+const { processMedia } = require('../service/imageStorage');
 
 const handleLineWebhook = async (req, res) => {
   const events = req.body.events;

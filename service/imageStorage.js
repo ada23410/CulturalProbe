@@ -29,7 +29,7 @@ const processMedia = async (client, message) => {
   console.log('Client Instance:', client);
   try {
     const contentStream = await client.getMessageContent(message.id); // 確保 client 正確初始化
-    console.log('Content Stream:', contentStream);
+    console.log(contentStream)
     const fileName = `uploads/${Date.now()}-${message.id}`;
     const contentType =
       message.type === 'image'

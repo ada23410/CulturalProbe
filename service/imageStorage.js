@@ -24,27 +24,23 @@ const uploadToFirebase = async (contentStream, fileName, contentType) => {
   }
 };
 
-const processMedia = async (client, message) => {
-  console.log(message);
-  console.log('Client Instance:', client);
+const processMedia = async (messageId, messageType) => {
   try {
-    const contentStream = await client.getMessageContent(message.id); // 確保 client 正確初始化
-    console.log(contentStream)
-    const fileName = `uploads/${Date.now()}-${message.id}`;
+    const stream = await client.getMessageContent(messageId);
+    const fileName = `uploads/${Date.now()}-${messageId}`;
     const contentType =
-      message.type === 'image'
+      messageType === 'image'
         ? 'image/jpeg'
-        : message.type === 'video'
+        : messageType === 'video'
         ? 'video/mp4'
         : 'audio/m4a';
 
-    // 上傳檔案至 Firebase
-    const publicUrl = await uploadToFirebase(contentStream, fileName, contentType);
-    console.log(`文件已上傳至 Firebase: ${publicUrl}`);
+    const publicUrl = await uploadToFirebase(stream, fileName, contentType);
+    console.log(`文件已上傳到 Firebase: ${publicUrl}`);
     return publicUrl;
   } catch (error) {
-    console.error('多媒體處理失敗:', error);
-    throw new Error('多媒體檔案處理失敗');
+    console.error('處理多媒體失敗:', error);
+    throw new Error('多媒體處理失敗');
   }
 };
 

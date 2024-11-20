@@ -1,4 +1,4 @@
-const { processMedia } = require('../services/imageProcessor');
+const { processMedia } = require('../service/imageStorage');
 const { saveText } = require('../models/textModel');
 
 const handleLineWebhook = async (req, res) => {

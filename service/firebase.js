@@ -1,8 +1,9 @@
 const dotenv = require('dotenv');
-dotenv.config({ path: './.env'});
+dotenv.config({ path: './.env' });
+
 const admin = require("firebase-admin");
 
-// 加入環境變數
+// 使用環境變數配置 Firebase
 const config = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
@@ -13,12 +14,16 @@ const config = {
     auth_uri: process.env.FIREBASE_AUTH_URI,
     token_uri: process.env.FIREBASE_TOKEN_URI,
     auth_provider_X509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
-}
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+};
 
+// 初始化 Firebase Admin SDK
 admin.initializeApp({
     credential: admin.credential.cert(config),
-    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app`
-})
+    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app`, // 修正 Storage Bucket 格式
+});
 
-module.exports = admin;
+// 獲取 Storage Bucket 實例
+const bucket = admin.storage().bucket();
+
+module.exports = bucket;

@@ -25,6 +25,7 @@ const uploadToFirebase = async (contentStream, fileName, contentType) => {
 };
 
 const processMedia = async (client, message) => {
+  console.log(message);
   try {
     const contentStream = await client.getMessageContent(message.id); // 確保 client 正確初始化
     const fileName = `uploads/${Date.now()}-${message.id}`;

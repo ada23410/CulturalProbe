@@ -16,15 +16,15 @@ const lineRoutes = require('./routes/lineRoutes');
 const app = express();
 
 // 環境變數
-// dotenv.config({ path: './.env'});
-// const DB = process.env.DATABASE.replace(
-//   '<password>',
-//   process.env.DATABASE_PASSWORD
-// );
+dotenv.config({ path: './.env'});
+const DB = process.env.DATABASE.replace(
+  '<password>',
+  process.env.DATABASE_PASSWORD
+);
 
 
 // 連結DB
-mongoose.connect('mongodb://localhost:27017/cultural')
+mongoose.connect(DB)
         .then(res => console.log("連線資料成功"))
         .catch((error)=> {console.log("資料連線失敗",error)}) 
 

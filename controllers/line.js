@@ -63,13 +63,17 @@ const handleLineWebhook = async (req, res) => {
           const messageId = event.message.id;
           console.log(`處理音訊訊息, messageId: ${messageId}`);
 
-          // 獲取音訊 Buffer
-          const audioBuffer = await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN, 'audio');
-          console.log('音訊內容成功獲取，大小:', audioBuffer.length);
+          // 獲取音訊 Buffer 和 Content-Type
+          const { buffer, contentType } = await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN);
+          console.log('音訊內容成功獲取，大小:', buffer.length);
+          console.log('音訊的 Content-Type:', contentType);
+
+          // 確定文件名和類型
+          const extension = contentType.split('/')[1]; // 提取類型後綴，例如 m4a
+          const fileName = `audio/${messageId}.${extension}`;
 
           // 上傳到 Firebase
-          const fileName = `audio/${messageId}.m4a`;
-          const firebaseUrl = await uploadAudioToFirebase(audioBuffer, fileName, 'audio/m4a');
+          const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
           console.log('音訊已成功上傳到 Firebase，公開 URL:', firebaseUrl);
 
           // 回覆用戶

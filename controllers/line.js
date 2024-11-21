@@ -3,7 +3,6 @@ const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
 const { fetchContent } = require('../service/getContent'); // 获取多媒体内容的逻辑
-const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const MediaModel = require('../models/mediaModel'); // 多媒体数据模型
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -60,24 +59,29 @@ const handleLineWebhook = async (req, res) => {
           console.log('圖片訊息已保存到資料庫:', imgurLink);
 
         } else if (messageType === 'audio') {
-          const messageId = event.message.id;
-          console.log(`處理音訊訊息, messageId: ${messageId}`);
-
-          // 獲取音訊 Buffer 和 Content-Type
-          const { buffer, contentType } = await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN);
-          console.log('音訊內容成功獲取，大小:', buffer.length);
-          console.log('音訊的 Content-Type:', contentType);
-
-          // 確定文件名和類型
-          const extension = contentType.split('/')[1]; // 提取類型後綴，例如 m4a
-          const fileName = `audio/${messageId}.${extension}`;
-
-          // 上傳到 Firebase
-          const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
-          console.log('音訊已成功上傳到 Firebase，公開 URL:', firebaseUrl);
-
-          // 回覆用戶
-          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
+           // 處理音訊消息
+           const messageId = event.message.id;
+           console.log(`處理音訊訊息, messageId: ${messageId}`);
+ 
+           // 從 LINE 獲取音訊內容
+           const audioBuffer = await fetchContent(messageId, LINE_ACCESS_TOKEN, 'audio');
+ 
+           // 上傳到 Firebase
+           const firebaseUrl = await uploadAudioToFirebase(audioBuffer, `audio/${messageId}.m4a`);
+           console.log('音訊已上傳到 Firebase:', firebaseUrl);
+ 
+           // 回覆用戶
+           await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
+ 
+           // 儲存音訊連結到資料庫
+           const audioMessage = new MediaModel({
+             userId,
+             messageType: 'audio',
+             mediaUrl: firebaseUrl,
+           });
+ 
+           await audioMessage.save();
+           console.log('音訊訊息已保存到資料庫:', firebaseUrl);
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);

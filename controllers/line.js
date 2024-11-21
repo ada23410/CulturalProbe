@@ -40,10 +40,10 @@ const handleLineWebhook = async (req, res) => {
 
           // 上傳到 Imgur
           const imgurLink = await uploadToImgur(base64Content);
-          console.log('圖片已上傳到 Imgur:', imgurLink);
+          console.log('圖片已上傳到Imgur:', imgurLink);
 
           // 回覆用戶
-          await replyToUser(event.replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
+          await replyToUser(event.replyToken, `圖片已成功上傳到Imgur: ${imgurLink}`);
         }
 
       } catch (error) {

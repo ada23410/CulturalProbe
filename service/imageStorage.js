@@ -60,14 +60,21 @@ const handleFileUpload = (req, res, next) => {
 // 保存文字消息到 MongoDB
 const processTextMessage = async (userId, text) => {
   try {
-    console.log('Saving text message:', text);
-    await saveText({ userId, text });
+    // 验证参数类型
+    if (typeof userId !== 'string' || typeof text !== 'string') {
+      console.error('Invalid input: userId and text must be strings');
+      throw new Error('Invalid input: userId and text must be strings');
+    }
+
+    console.log('Saving text message:', { userId, text });
+    await saveText(userId, text);
     console.log('文字訊息已保存到 MongoDB');
   } catch (error) {
     console.error('文字保存失敗:', error.message);
     throw new Error(`文字保存失敗: ${error.message}`);
   }
 };
+
 
 module.exports = {
   processUploadedFile,

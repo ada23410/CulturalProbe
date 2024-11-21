@@ -26,26 +26,27 @@ const handleLineWebhook = async (req, res) => {
 
         } else if (messageType === 'image') {
           const messageId = event.message.id;
-          console.log(`獲取多媒體內容, messageId: ${messageId}`);
+          console.log(`獲取圖片內容, messageId: ${messageId}`);
 
-          // 獲取圖片內容並轉換為 Base64
-          const contentBuffer = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-          const base64Image = Buffer.from(contentBuffer).toString('base64');
-          console.log('成功獲取圖片內容，大小:', contentBuffer.length);
-
-          // 將圖片上傳到 Imgur
-          const imgurLink = await uploadToImgur(base64Image);
-          console.log('圖片已上傳到 Imgur:', imgurLink);
-
-          // 保存圖片連結到 MongoDB（可選）
-          await MediaModel.create({
-            userId: event.source.userId,
-            type: 'image',
-            link: imgurLink,
-            createdAt: new Date(),
+          // 從 LINE 獲取圖片內容 (Buffer)
+          const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
+            },
+            responseType: 'arraybuffer', // 返回二進制數據
           });
 
-          // 回覆用戶圖片上傳成功及連結
+          console.log('成功獲取圖片內容，大小:', response.headers['content-length']);
+
+          // 將圖片內容轉換為 Base64
+          const base64Content = Buffer.from(response.data).toString('base64');
+
+          // 上傳到 Imgur
+          const imgurLink = await uploadToImgur(base64Content);
+          console.log('圖片已上傳到 Imgur:', imgurLink);
+
+          // 回覆用戶
           await replyToUser(event.replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
 
         } else if (messageType === 'audio') {

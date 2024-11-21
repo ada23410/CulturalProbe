@@ -1,16 +1,8 @@
 const axios = require('axios');
-const { ImgurClient } = require('imgur');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
-const { fetchContent } = require('../service/getContent'); // 获取图片内容的逻辑
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-
-const imgurClient = new ImgurClient({
-  clientId: process.env.IMGUR_CLIENT_ID,
-  clientSecret: process.env.IMGUR_CLIENT_SECRET,
-  refreshToken: process.env.IMGUR_REFRESH_TOKEN,
-});
 
 const handleLineWebhook = async (req, res) => {
   const events = req.body.events;
@@ -20,33 +12,40 @@ const handleLineWebhook = async (req, res) => {
       const messageType = event.message.type;
 
       try {
+        // 處理文字消息
         if (messageType === 'text') {
-          // 处理文字消息
           const userId = event.source.userId;
           const text = event.message.text;
-          await saveText(userId, text); // 保存文字消息到 MongoDB
+          await saveText(userId, text); // 保存到 MongoDB
           console.log('文字消息已保存:', text);
+          await replyToUser(event.replyToken, `文字訊息已保存: ${text}`);
 
         } else if (messageType === 'image') {
-          // 处理图片消息
           const messageId = event.message.id;
-
-          // 从 LINE 获取图片内容
           console.log(`獲取多媒體內容, messageId: ${messageId}`);
-          const content = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-          const base64Content = Buffer.from(content).toString('base64'); // 转换为 Base64
 
-          // 上传图片到 Imgur
-          const response = await imgurClient.uploadBase64(base64Content, {
-            album: process.env.IMGUR_ALBUM_ID, // 指定 Album
+          // 獲取圖片內容作為 Buffer
+          const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`,
+            },
+            responseType: 'arraybuffer', // 返回二進制數據
           });
-          console.log('圖片已成功上傳到 Imgur:', imgurLink);
 
-          // 回复用户上传成功的信息
-          await replyToUser(event.replyToken, `圖片已成功上傳！連結：${response.data.link}`);
-        } else {
-          console.warn(`收到不支持的訊息類型: ${messageType}`);
+          console.log('成功獲取圖片內容，大小:', response.headers['content-length']);
+
+          // 將內容轉換為 Base64
+          const base64Content = Buffer.from(response.data).toString('base64');
+
+          // 上傳到 Imgur
+          const imgurLink = await uploadToImgur(base64Content);
+          console.log('圖片已上傳到 Imgur:', imgurLink);
+
+          // 回覆用戶
+          await replyToUser(event.replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
         }
+
       } catch (error) {
         console.error('消息處理失敗:', error.message);
         await replyToUser(event.replyToken, '處理消息時發生錯誤，請稍後再試！');

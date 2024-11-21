@@ -3,7 +3,7 @@ const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
 const { fetchContent } = require('../service/getContent'); // 获取多媒体内容的逻辑
-const { uploadToFirebase } = require('../service/uploadFirebase');
+const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const MediaModel = require('../models/mediaModel'); // 多媒体数据模型
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -63,14 +63,13 @@ const handleLineWebhook = async (req, res) => {
           const messageId = event.message.id;
           console.log(`處理音訊訊息, messageId: ${messageId}`);
 
-          // 獲取音訊內容
-          const localPath = `./uploads/${messageId}.m4a`; // 保存到本地
-          await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN, 'audio');
-          console.log('音訊已保存到本地:', localPath);
+          // 獲取音訊 Buffer
+          const audioBuffer = await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN);
+          console.log('音訊內容成功獲取，大小:', audioBuffer.length);
 
           // 上傳到 Firebase
-          const remoteFileName = `audio/${messageId}.m4a`;
-          const firebaseUrl = await uploadToFirebase(localPath, remoteFileName);
+          const fileName = `audio/${messageId}.m4a`;
+          const firebaseUrl = await uploadAudioToFirebase(audioBuffer, fileName, 'audio/m4a');
 
           // 回覆用戶
           await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);

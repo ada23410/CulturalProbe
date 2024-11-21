@@ -3,7 +3,7 @@ const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
 const { fetchContent } = require('../service/getContent'); // 获取多媒体内容的逻辑
-const { uploadFirebase } = require('../service/uploadFirebase');
+const { uploadToFirebase } = require('../service/uploadFirebase');
 const MediaModel = require('../models/mediaModel'); // 多媒体数据模型
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -70,7 +70,7 @@ const handleLineWebhook = async (req, res) => {
 
           // 上傳到 Firebase
           const remoteFileName = `audio/${messageId}.m4a`;
-          const firebaseUrl = await uploadFirebase(localPath, remoteFileName);
+          const firebaseUrl = await uploadToFirebase(localPath, remoteFileName);
 
           // 回覆用戶
           await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);

@@ -1,34 +1,31 @@
-const { processMedia } = require('../service/imageStorage');
-const { saveText } = require('../models/textModel');
+const { handleFileUpload, processUploadedFile } = require('../service/imageStorage');
 
 const handleLineWebhook = async (req, res) => {
-  const events = req.body.events;
+  try {
+    const events = req.body.events;
 
-  for (const event of events) {
-    if (event.type === 'message') {
-      const message = event.message;
+    for (const event of events) {
+      if (event.type === 'message' && ['image', 'video', 'audio'].includes(event.message.type)) {
+        const messageId = event.message.id;
+        const localPath = path.join('./uploads', `${messageId}.jpg`);
 
-      if (message.type === 'text') {
-        // 保存文字到 MongoDB
-        try {
-          await saveText(event.source.userId, message.text);
-          console.log('文字訊息保存成功');
-        } catch (error) {
-          console.error('保存文字訊息失败:', error);
-        }
-      } else if (['image', 'video', 'audio'].includes(message.type)) {
-        // 处理多媒体消息
-        try {
-          const result = await processMedia(message, { saveToLocal: false, uploadToFirebase: true });
-          console.log('多媒體處理結果:', result);
-        } catch (error) {
-          console.error('多媒體處理失败:', error);
-        }
+        // 下载文件
+        await downloadContent(messageId, LINE_CHANNEL_ACCESS_TOKEN, localPath);
+
+        // 上传到 Firebase
+        const publicUrl = await processUploadedFile(localPath, { uploadToFirebase: true });
+        console.log('文件已上传到 Firebase:', publicUrl);
+
+        // 回复用户
+        await replyToUser(event.replyToken, `文件已成功上传: ${publicUrl}`);
       }
     }
-  }
 
-  res.status(200).end();
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Webhook 处理失败:', error.message);
+    res.status(500).send({ error: 'Webhook 处理失败' });
+  }
 };
 
 module.exports = { handleLineWebhook };

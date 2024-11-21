@@ -49,6 +49,7 @@ const processMedia = async (message, options = { saveToLocal: false, uploadToFir
             ? '.m4a'
             : null;
 
+      console.log('File extension determined:', extension); // 打印文件扩展名
       if (!extension) {
         console.error(`Unsupported media type: ${message.type}`);
         throw new Error(`Unsupported media type: ${message.type}`);

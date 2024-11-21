@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const downloadContent = async (messageId, accessToken, downloadPath) => {
+  console.log('Downloaded path returned:', downloadedPath);
   try {
     console.log('Downloading content...');
     console.log(`Message ID: ${messageId}`);

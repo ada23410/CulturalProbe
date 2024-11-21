@@ -26,20 +26,18 @@ const handleLineWebhook = async (req, res) => {
 
         } else if (messageType === 'image') {
           const messageId = event.message.id;
-          console.log(`獲取圖片內容, messageId: ${messageId}`);
+          console.log(`處理圖片訊息, messageId: ${messageId}`);
 
-          // 從 LINE 獲取圖片內容 (Buffer)
+          // 從 LINE 獲取圖片內容
           const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
           const response = await axios.get(url, {
             headers: {
               Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
             },
-            responseType: 'arraybuffer', // 返回二進制數據
+            responseType: 'arraybuffer',
           });
 
           console.log('成功獲取圖片內容，大小:', response.headers['content-length']);
-
-          // 將圖片內容轉換為 Base64
           const base64Content = Buffer.from(response.data).toString('base64');
 
           // 上傳到 Imgur
@@ -48,6 +46,16 @@ const handleLineWebhook = async (req, res) => {
 
           // 回覆用戶
           await replyToUser(event.replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
+
+          // 儲存圖片連結到資料庫
+          const imageMessage = new MediaModel({
+            userId,
+            messageType: 'image',
+            imgurLink,
+          });
+
+          await imageMessage.save();
+          console.log('圖片訊息已保存到資料庫:', imgurLink);
 
         } else if (messageType === 'audio') {
           const messageId = event.message.id;

@@ -59,31 +59,41 @@ const handleLineWebhook = async (req, res) => {
 
         } else if (messageType === 'audio') {
           const messageId = event.message.id;
-          console.log(`獲取音訊內容, messageId: ${messageId}`);
-
-          // 获取音频内容作为 Buffer
-          const audioContent = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-          console.log(`成功獲取音訊內容，大小: ${audioContent.length}`);
-
-          // 保存音频到本地
-          const audioPath = `./uploads/${messageId}.m4a`;
-          require('fs').writeFileSync(audioPath, audioContent);
-          console.log('音訊已保存到本地:', audioPath);
-
-          // 保存音频路径到 MongoDB
+          console.log(`處理音訊訊息, messageId: ${messageId}`);
+        
+          // 獲取音訊內容並保存到本地
+          const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
+            },
+            responseType: 'arraybuffer',
+          });
+        
+          console.log('成功獲取音訊內容，大小:', response.headers['content-length']);
+          const localPath = `./uploads/${messageId}.m4a`;
+        
+          // 創建目錄並保存文件
+          const fs = require('fs');
+          const dirPath = path.resolve('./uploads');
+          if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+            console.log('目錄已創建:', dirPath);
+          }
+        
+          fs.writeFileSync(localPath, response.data);
+          console.log('音訊已保存到本地:', localPath);
+        
+          // 保存音訊訊息到資料庫
           const audioMessage = new MediaModel({
             userId,
-            messageType: 'audio',
+            messageType: 'audio', // 確保提供此欄位
             localPath,
           });
-          await newMedia.save();
-          console.log('音訊訊息已保存到 MongoDB:', audioPath);
-
-          // 回覆用戶
-          await replyToUser(event.replyToken, `音訊已成功保存到本地: ${audioPath}`);
-        } else {
-          console.log('未處理的訊息類型:', messageType);
-          await replyToUser(event.replyToken, `目前不支援此類型的消息: ${messageType}`);
+        
+          await audioMessage.save();
+          console.log('音訊訊息已保存:', localPath);
+          await replyToUser(event.replyToken, `音訊已保存到本地: ${localPath}`);
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);

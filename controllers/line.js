@@ -1,9 +1,16 @@
 const axios = require('axios');
+const { ImgurClient } = require('imgur');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
 const { fetchContent } = require('../service/getContent'); // 获取图片内容的逻辑
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+
+const ImgurClient = new ImgurClient({
+  clientId: process.env.IMGUR_CLIENT_ID,
+  clientSecret: process.env.IMGUR_CLIENT_SECRET,
+  refreshToken: process.env.IMGUR_REFRESH_TOKEN,
+});
 
 const handleLineWebhook = async (req, res) => {
   const events = req.body.events;
@@ -30,11 +37,13 @@ const handleLineWebhook = async (req, res) => {
           const base64Content = Buffer.from(content).toString('base64'); // 转换为 Base64
 
           // 上传图片到 Imgur
-          const imgurLink = await uploadToImgur(base64Content);
+          const response = await ImgurClient.uploadBase64(base64Content, {
+            album: process.env.IMGUR_ALBUM_ID, // 指定 Album
+          });
           console.log('圖片已成功上傳到 Imgur:', imgurLink);
 
           // 回复用户上传成功的信息
-          await replyToUser(event.replyToken, `圖片已成功上傳！連結：${imgurLink}`);
+          await replyToUser(event.replyToken, `圖片已成功上傳！連結：${response.data.link}`);
         } else {
           console.warn(`收到不支持的訊息類型: ${messageType}`);
         }

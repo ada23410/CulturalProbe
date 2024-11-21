@@ -6,7 +6,7 @@ const { fetchContent } = require('../service/getContent'); // 获取图片内容
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
-const ImgurClient = new ImgurClient({
+const imgurClient = new ImgurClient({
   clientId: process.env.IMGUR_CLIENT_ID,
   clientSecret: process.env.IMGUR_CLIENT_SECRET,
   refreshToken: process.env.IMGUR_REFRESH_TOKEN,
@@ -37,7 +37,7 @@ const handleLineWebhook = async (req, res) => {
           const base64Content = Buffer.from(content).toString('base64'); // 转换为 Base64
 
           // 上传图片到 Imgur
-          const response = await ImgurClient.uploadBase64(base64Content, {
+          const response = await imgurClient.uploadBase64(base64Content, {
             album: process.env.IMGUR_ALBUM_ID, // 指定 Album
           });
           console.log('圖片已成功上傳到 Imgur:', imgurLink);

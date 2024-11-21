@@ -1,5 +1,8 @@
-const { processUploadedFile, processTextMessage } = require('../service/imageStorage');
-const { downloadContent } = require('../service/mediaDownload');
+const path = require('path');
+const { saveText } = require('../service/imageStorage');
+const { processContent } = require('../service/mediaDownload');
+
+const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
 const handleLineWebhook = async (req, res) => {
   const events = req.body.events;
@@ -13,20 +16,18 @@ const handleLineWebhook = async (req, res) => {
         if (messageType === 'text') {
           const userId = event.source.userId;
           const text = event.message.text;
-          await processTextMessage(userId, text); // 保存到 MongoDB
+          await saveText(userId, text); // 保存文字消息到 MongoDB
           console.log('文字消息已处理:', text);
 
         // 处理多媒体消息
         } else if (['image', 'video', 'audio'].includes(messageType)) {
           const messageId = event.message.id;
-          const localPath = path.join('./uploads', `${messageId}.jpg`);
 
-          // 下载多媒体文件
-          await downloadContent(messageId, LINE_ACCESS_TOKEN, localPath);
-
-          // 上传到 Firebase
-          const publicUrl = await processUploadedFile(localPath, { uploadToFirebase: true });
-          console.log('多媒体消息已上传:', publicUrl);
+          // 下载多媒体文件内容并打印响应信息
+          console.log(`获取多媒体消息内容, messageId: ${messageId}`);
+          await processContent(messageId, LINE_ACCESS_TOKEN);
+        } else {
+          console.warn(`收到不支持的消息类型: ${messageType}`);
         }
 
       } catch (error) {

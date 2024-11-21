@@ -13,9 +13,4 @@ const TextSchema = new mongoose.Schema(
 
 const TextModel = mongoose.model('Text', TextSchema);
 
-const saveText = async (userId, text) => {
-    const newText = new TextModel({ userId, text });
-    await newText.save();
-};
-
-module.exports = { saveText };
+module.exports = TextModel;

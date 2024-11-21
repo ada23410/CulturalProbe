@@ -16,7 +16,7 @@ const uploadToImgur = async (base64Image) => {
       album: process.env.IMGUR_ALBUM_ID, // 可选
     });
 
-    console.log('圖片已上传到 Imgur:', response.data.link);
+    console.log('圖片已上傳到 Imgur:', response.data.link);
     return response.data.link; // 返回图片链接
   } catch (error) {
     console.error('上傳到 Imgur 失敗:', error.message);

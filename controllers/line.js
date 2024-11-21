@@ -1,3 +1,4 @@
+const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
 const { fetchContent } = require('../service/getContent'); // 获取图片内容的逻辑
@@ -30,11 +31,10 @@ const handleLineWebhook = async (req, res) => {
 
           // 上传图片到 Imgur
           const imgurLink = await uploadToImgur(base64Content);
-
           console.log('圖片已成功上傳到 Imgur:', imgurLink);
 
           // 回复用户上传成功的信息
-          await replyToUser(event.replyToken, `图片已成功上传！連結：${imgurLink}`);
+          await replyToUser(event.replyToken, `圖片已成功上傳！連結：${imgurLink}`);
         } else {
           console.warn(`收到不支持的訊息類型: ${messageType}`);
         }

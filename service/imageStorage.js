@@ -38,26 +38,35 @@ const processMedia = async (message, options = { saveToLocal: false, uploadToFir
     // 保存到本地
     let localPath;
     if (options.saveToLocal) {
+      console.log('Preparing to save to local...');
+
+      // 确保目录存在
       const localDir = path.resolve(__dirname, '../../downloads');
       console.log('Local directory resolved:', localDir);
-      const extension =
-            message.type === 'image'
-            ? '.jpg'
-            : message.type === 'video'
-            ? '.mp4'
-            : message.type === 'audio'
-            ? '.m4a'
-            : null;
 
-      console.log('File extension determined:', extension); // 打印文件扩展名
-      if (!extension) {
+      if (!fs.existsSync(localDir)) {
+        console.log('Directory does not exist. Creating:', localDir);
+        fs.mkdirSync(localDir, { recursive: true });
+      }
+
+      // 检查支持的媒体类型
+      const supportedMediaTypes = ['image', 'video', 'audio'];
+      if (!supportedMediaTypes.includes(message.type)) {
         console.error(`Unsupported media type: ${message.type}`);
         throw new Error(`Unsupported media type: ${message.type}`);
       }
+
+      // 根据媒体类型确定文件扩展名
+      const extension = {
+        image: '.jpg',
+        video: '.mp4',
+        audio: '.m4a',
+      }[message.type];
+      console.log('File extension determined:', extension);
+
+      // 生成本地路径
       localPath = path.join(localDir, `${message.id}${extension}`);
       console.log('Generated localPath:', localPath);
-      await downloadContent(message.id, accessToken, localPath);
-      console.log(`文件已保存到本地: ${localPath}`);
     }
 
     // 上传到 Firebase

@@ -8,8 +8,8 @@ const saveText = async (userId, text) => {
     await newText.save();
     console.log('文字消息保存成功');
   } catch (error) {
-    console.error('保存文字消息失败:', error.message);
-    throw new Error(`文字消息保存失败: ${error.message}`);
+    console.error('保存文字消息失敗:', error.message);
+    throw new Error(`文字消息保存失敗: ${error.message}`);
   }
 };
 

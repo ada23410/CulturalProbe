@@ -3,6 +3,7 @@ const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
 const { fetchContent } = require('../service/getContent'); // 获取多媒体内容的逻辑
+const { uploadFirebase } = require('../service/uploadFirebase');
 const MediaModel = require('../models/mediaModel'); // 多媒体数据模型
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -61,40 +62,18 @@ const handleLineWebhook = async (req, res) => {
         } else if (messageType === 'audio') {
           const messageId = event.message.id;
           console.log(`處理音訊訊息, messageId: ${messageId}`);
-        
-          // 獲取音訊內容並保存到本地
-          const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
-          const response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
-            },
-            responseType: 'arraybuffer',
-          });
-        
-          console.log('成功獲取音訊內容，大小:', response.headers['content-length']);
-          const localPath = `./uploads/${messageId}.m4a`;
-        
-          // 創建目錄並保存文件
-          const fs = require('fs');
-          const dirPath = path.resolve('./uploads');
-          if (!fs.existsSync(dirPath)) {
-            fs.mkdirSync(dirPath, { recursive: true });
-            console.log('目錄已創建:', dirPath);
-          }
-        
-          fs.writeFileSync(localPath, response.data);
+
+          // 獲取音訊內容
+          const localPath = `./uploads/${messageId}.m4a`; // 保存到本地
+          await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN, 'audio');
           console.log('音訊已保存到本地:', localPath);
-        
-          // 保存音訊訊息到資料庫
-          const audioMessage = new MediaModel({
-            userId,
-            messageType: 'audio', // 確保提供此欄位
-            localPath,
-          });
-        
-          await audioMessage.save();
-          console.log('音訊訊息已保存:', localPath);
-          await replyToUser(event.replyToken, `音訊已保存到本地: ${localPath}`);
+
+          // 上傳到 Firebase
+          const remoteFileName = `audio/${messageId}.m4a`;
+          const firebaseUrl = await uploadFirebase(localPath, remoteFileName);
+
+          // 回覆用戶
+          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);

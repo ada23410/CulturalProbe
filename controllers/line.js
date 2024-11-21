@@ -71,10 +71,10 @@ const handleLineWebhook = async (req, res) => {
           console.log('音訊已保存到本地:', audioPath);
 
           // 保存音频路径到 MongoDB
-          const newMedia = new MediaModel({
+          const audioMessage = new MediaModel({
             userId,
-            type: 'audio',
-            localPath: audioPath,
+            messageType: 'audio',
+            localPath,
           });
           await newMedia.save();
           console.log('音訊訊息已保存到 MongoDB:', audioPath);

@@ -9,23 +9,27 @@ const uploadToImgur = async (base64Image) => {
       refreshToken: process.env.IMGUR_REFRESH_TOKEN, // 可选
     });
 
-    // 上传到 Imgur
+    // 上傳圖片到 Imgur
     const response = await client.upload({
       image: base64Image,
       type: 'base64',
       album: process.env.IMGUR_ALBUM_ID, // 可选
     });
 
-    console.log('圖片已上傳到 Imgur:', response.data);
-    const link = response.data.link; // 嘗試提取圖片 URL
-    console.log('圖片連結:', link);
+    // 檢查上傳結果是否成功
+    if (!response || !response.data || !response.data.link) {
+      console.error('Imgur 上傳失敗: 沒有返回有效的圖片連結', response);
+      throw new Error('Imgur 上傳失敗: 無效的返回數據');
+    }
 
-    return link; // 返回圖片 URL
+    console.log('圖片已上傳到 Imgur:', response.data.link);
+    return response.data.link; // 返回圖片 URL
+
   } catch (error) {
-    console.error('上傳到 Imgur 失敗:', error.message);
+    // 顯示更詳細的錯誤信息
+    console.error('上傳到 Imgur 失敗:', error.response?.data || error.message);
     throw new Error('上傳到 Imgur 失敗');
   }
 };
 
 module.exports = { uploadToImgur };
-

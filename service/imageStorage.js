@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('./images'); // Multer 配置模块
 const { uploadToFirebase } = require('./firebase');
+const { saveText } = require('../models/textModel');
 
 // 处理上传的多媒体文件
 const processUploadedFile = async (filePath, options = { uploadToFirebase: false }) => {
@@ -23,8 +24,8 @@ const processUploadedFile = async (filePath, options = { uploadToFirebase: false
 
     return filePath; // 如果不需要上传到 Firebase，返回本地路径
   } catch (error) {
-    console.error('文件处理失败:', error.message);
-    throw new Error(`文件处理失败: ${error.message}`);
+    console.error('文件處理失敗:', error.message);
+    throw new Error(`文件處理失敗: ${error.message}`);
   }
 };
 
@@ -50,13 +51,25 @@ const handleFileUpload = (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error('文件处理过程中出错:', error.message);
-      res.status(500).send({ error: '文件处理失败' });
+      console.error('文件處理程中錯誤:', error.message);
+      res.status(500).send({ error: '文件處理失敗' });
     }
   });
 };
 
+// 保存文字消息到 MongoDB
+const processTextMessage = async (userId, text) => {
+  try {
+    console.log('Saving text message:', text);
+    await saveText({ userId, text });
+    console.log('文字訊息已保存到 MongoDB');
+  } catch (error) {
+    console.error('文字保存失敗:', error.message);
+    throw new Error(`文字保存失敗: ${error.message}`);
+  }
+};
+
 module.exports = {
-  handleFileUpload,
   processUploadedFile,
+  processTextMessage
 };

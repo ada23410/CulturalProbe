@@ -28,27 +28,24 @@ const handleLineWebhook = async (req, res) => {
           const messageId = event.message.id;
           console.log(`獲取多媒體內容, messageId: ${messageId}`);
 
-          // 获取图片内容作为 Buffer
-          const imageContent = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-          console.log(`成功獲取圖片內容，大小: ${imageContent.length}`);
+          // 獲取圖片內容並轉換為 Base64
+          const contentBuffer = await fetchContent(messageId, LINE_ACCESS_TOKEN);
+          const base64Image = Buffer.from(contentBuffer).toString('base64');
+          console.log('成功獲取圖片內容，大小:', contentBuffer.length);
 
-          // 将内容转换为 Base64
-          const base64Content = Buffer.from(imageContent).toString('base64');
-
-          // 上传到 Imgur
-          const imgurLink = await uploadToImgur(base64Content);
+          // 將圖片上傳到 Imgur
+          const imgurLink = await uploadToImgur(base64Image);
           console.log('圖片已上傳到 Imgur:', imgurLink);
 
-          // 保存图片链接到 MongoDB
-          const newMedia = new MediaModel({
-            userId,
+          // 保存圖片連結到 MongoDB（可選）
+          await MediaModel.create({
+            userId: event.source.userId,
             type: 'image',
-            url: imgurLink,
+            link: imgurLink,
+            createdAt: new Date(),
           });
-          await newMedia.save();
-          console.log('圖片訊息已保存到 MongoDB:', imgurLink);
 
-          // 回覆用戶
+          // 回覆用戶圖片上傳成功及連結
           await replyToUser(event.replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
 
         } else if (messageType === 'audio') {

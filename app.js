@@ -10,7 +10,6 @@ const dotenv = require('dotenv');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
-const imageRoutes = require('./routes/imageRoutes');
 const lineRoutes = require('./routes/lineRoutes');
 
 const app = express();
@@ -39,7 +38,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 圖片上傳路由
-app.use("/api/images", imageRoutes);
 app.use('/api/line', lineRoutes);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

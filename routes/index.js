@@ -1,5 +1,4 @@
 var express = require('express');
-const { handleImageUpload } = require('../controllers/upload');
 var router = express.Router();
 
 /* GET home page. */

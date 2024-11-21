@@ -1,3 +1,4 @@
+const path = require('path');
 const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
 const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑

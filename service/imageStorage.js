@@ -41,9 +41,18 @@ const processMedia = async (message, options = { saveToLocal: false, uploadToFir
       const localDir = path.resolve(__dirname, '../../downloads');
       console.log('Local directory resolved:', localDir);
       const extension =
-        message.type === 'image' ? '.jpg' :
-        message.type === 'video' ? '.mp4' :
-        message.type === 'audio' ? '.m4a' : '';
+            message.type === 'image'
+            ? '.jpg'
+            : message.type === 'video'
+            ? '.mp4'
+            : message.type === 'audio'
+            ? '.m4a'
+            : null;
+
+      if (!extension) {
+        console.error(`Unsupported media type: ${message.type}`);
+        throw new Error(`Unsupported media type: ${message.type}`);
+      }
       localPath = path.join(localDir, `${message.id}${extension}`);
       console.log('Generated localPath:', localPath);
       await downloadContent(message.id, accessToken, localPath);

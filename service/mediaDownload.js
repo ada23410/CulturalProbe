@@ -4,28 +4,36 @@ const path = require('path');
 
 const downloadContent = async (messageId, accessToken, downloadPath) => {
   try {
+    console.log('Downloading content...');
+    console.log(`Message ID: ${messageId}`);
+    console.log(`Access Token: ${accessToken ? 'Loaded' : 'Not Loaded'}`);
+    console.log(`Download Path: ${downloadPath}`);
     const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+    console.log('Request URL:', url);
 
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
       responseType: 'stream',
     });
 
-    const dir = path.dirname(downloadPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    console.log('Received response from LINE API.');
 
     const writer = fs.createWriteStream(downloadPath);
     response.data.pipe(writer);
 
     return new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(downloadPath));
-      writer.on('error', reject);
+      writer.on('finish', () => {
+        console.log('File written successfully.');
+        resolve(downloadPath);
+      });
+      writer.on('error', (err) => {
+        console.error('Error writing file:', err.message);
+        reject(err);
+      });
     });
   } catch (error) {
-    console.error('下载多媒体内容失败:', error.message);
-    throw error;
+    console.error('Download failed:', error.message);
+    return null; // 明确返回 null 表示失败
   }
 };
 

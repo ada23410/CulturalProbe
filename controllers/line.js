@@ -64,12 +64,13 @@ const handleLineWebhook = async (req, res) => {
           console.log(`處理音訊訊息, messageId: ${messageId}`);
 
           // 獲取音訊 Buffer
-          const audioBuffer = await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN);
+          const audioBuffer = await fetchContent(messageId, process.env.LINE_CHANNEL_ACCESS_TOKEN, 'audio');
           console.log('音訊內容成功獲取，大小:', audioBuffer.length);
 
           // 上傳到 Firebase
           const fileName = `audio/${messageId}.m4a`;
           const firebaseUrl = await uploadAudioToFirebase(audioBuffer, fileName, 'audio/m4a');
+          console.log('音訊已成功上傳到 Firebase，公開 URL:', firebaseUrl);
 
           // 回覆用戶
           await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);

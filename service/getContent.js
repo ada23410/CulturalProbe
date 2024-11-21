@@ -16,7 +16,10 @@ const fetchContent = async (messageId, accessToken) => {
     console.log('Content-Type:', response.headers['content-type']);
     console.log('Content-Length:', response.headers['content-length']);
 
-    return response.data; // 返回二進制 Buffer
+    return {
+      buffer: response.data, // 二進制數據
+      contentType: response.headers['content-type'], // 文件類型
+    };
   } catch (error) {
     console.error('獲取內容失敗:', error.response?.data || error.message);
     throw error;

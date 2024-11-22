@@ -1,3 +1,5 @@
+const dotenv= require('dotenv');
+dotenv.config({ path: './config.env' });
 const axios = require('axios');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;

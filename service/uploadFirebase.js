@@ -3,39 +3,34 @@ const { bucket } = require('./firebase');
 // 上傳音訊至 Firebase
 const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
     try {
-      const fileName = `audio/${messageId}.${contentType.split('/')[1]}`; // 使用 messageId 作為文件名
-      const blob = bucket.file(fileName); // 創建文件對象
-
+      const blob = bucket.file(fileName);
       console.log('準備將文件上傳到 Firebase:', fileName);
 
       const blobStream = blob.createWriteStream({
-        metadata: { contentType }, // 設置文件類型
+        metadata: { contentType },
       });
 
       return new Promise((resolve, reject) => {
         blobStream.on('finish', async () => {
           try {
-            console.log('文件已成功上傳到 Firebase:', fileName);
-
-            // 取得檔案的公開 URL
-            const [fileUrl] = await blob.getSignedUrl({
+            const [url] = await blob.getSignedUrl({
               action: 'read',
-              expires: '12-31-2500', // 設定公開 URL 的有效期限
+              expires: '12-31-2500', // 設定有效期限
             });
-            console.log('檔案的公開 URL:', fileUrl);
-            resolve(fileUrl);
+            console.log('音訊已成功上傳到 Firebase，公開 URL:', url);
+            resolve(url);
           } catch (error) {
-            console.error('取得檔案公開 URL 失敗:', error.message);
-            reject(new Error('取得檔案公開 URL 失敗'));
+            console.error('取得公開 URL 失敗:', error.message);
+            reject(new Error('取得公開 URL 失敗'));
           }
         });
 
         blobStream.on('error', (error) => {
-          console.error('上傳過程中發生錯誤:', error.message);
+          console.error('文件上傳過程中失敗:', error.message);
           reject(new Error('文件上傳到 Firebase 失敗'));
         });
 
-        // 將 buffer 寫入流
+        // 寫入 Buffer
         blobStream.end(buffer);
       });
     } catch (error) {

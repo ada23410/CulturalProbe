@@ -65,10 +65,22 @@ const handleLineWebhook = async (req, res) => {
 
         } else if (messageType === 'audio') {
           console.log(`處理音訊訊息, messageId: ${event.message.id}`);
-          const firebaseUrl = await fetchContent(event);
-          console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
-          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
 
+          const url = `https://api-data.line.me/v2/bot/message/${event.message.id}/content`;
+          const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${process.env.LINE_ACCESS_TOKEN}` },
+            responseType: 'arraybuffer',
+          });
+
+          const buffer = response.data;
+          const contentType = response.headers['content-type'];
+
+          // 上傳音訊到 Firebase
+          const firebaseUrl = await uploadAudioToFirebase(buffer, event.message.id, contentType);
+          console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
+
+          // 回覆用戶
+          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
            // 儲存音訊連結到資料庫
            const audioMessage = new MediaModel({
               userId,

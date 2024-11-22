@@ -1,6 +1,7 @@
 const dotenv= require('dotenv');
 dotenv.config({ path: './config.env' });
 const path = require('path');
+const fs = require('fs');
 const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息
 const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur

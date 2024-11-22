@@ -16,7 +16,7 @@ const fetchContent = async (messageId, accessToken) => {
     console.log('Content-Type:', response.headers['content-type']);
     console.log('Content-Length:', response.headers['content-length']);
 
-    return response.data;
+    return { buffer: response.data, contentType: response.headers['content-type'] };
   } catch (error) {
     console.error('處理音訊訊息失敗:', error.message);
     throw new Error(`音訊處理失敗: ${error.message}`);

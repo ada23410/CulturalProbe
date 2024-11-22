@@ -1,7 +1,6 @@
 const dotenv= require('dotenv');
 dotenv.config({ path: './config.env' });
 const path = require('path');
-const fs = require('fs');
 const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息
 const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur
@@ -69,23 +68,27 @@ const handleLineWebhook = async (req, res) => {
 
         } else if (messageType === 'audio') {
           const messageId = event.message.id;
-          const audioPath = await handleAudio(messageId);
-          console.log('音訊已保存到本地:', audioPath);
+          console.log(`處理音訊訊息, messageId: ${messageId}`);
+
+          // 獲取音訊內容
+          const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
+          console.log('成功獲取音訊內容，大小:', buffer.length);
+
+          // 上傳音訊到 Firebase
+          const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
+          const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
+          console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
 
           // 回覆用戶
-          await replyToUser(
-            event.replyToken,
-            `音訊已保存: ${path.basename(audioPath)}`
-          );
-           // 儲存音訊連結到資料庫
-          // const audioMessage = new MediaModel({
-          //   userId,
-          //   messageType: 'audio',
-          //   mediaUrl: firebaseUrl,
-          // });
- 
-          // await audioMessage.save();
-          // console.log('音訊訊息已保存到資料庫:', firebaseUrl);
+          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
+
+          // 儲存音訊到資料庫
+          await MediaModel.create({
+            userId,
+            messageType: 'audio',
+            mediaUrl: firebaseUrl,
+          });
+          console.log('音訊訊息已保存到資料庫:', firebaseUrl);
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);
@@ -116,27 +119,6 @@ const replyToUser = async (replyToken, message) => {
     console.log('回覆用戶成功:', response.status);
   } catch (error) {
     console.error('回覆用戶失敗:', error.response?.data || error.message);
-  }
-};
-
-// **下載音訊內容並保存到本地**
-const handleAudio = async (messageId) => {
-  try {
-    const downloadPath = path.join(
-      process.cwd(),
-      'public',
-      'audio',
-      `${messageId}.m4a`
-    );
-
-    const audioBuffer = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-    fs.writeFileSync(downloadPath, audioBuffer);
-
-    console.log('音訊已成功保存到本地:', downloadPath);
-    return downloadPath;
-  } catch (error) {
-    console.error('音訊下載或保存失敗:', error.message);
-    throw new Error('音訊處理失敗');
   }
 };
 

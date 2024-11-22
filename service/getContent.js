@@ -5,6 +5,10 @@ const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
 // 從 LINE 獲取多媒體內容
 const fetchContent = async (event) => {
+  if (!event || !event.message || !event.message.id) {
+    throw new Error('Invalid event structure: message.id is undefined');
+  }
+
   const messageId = event.message.id;
   console.log(`開始處理音訊訊息, messageId: ${messageId}`);
 

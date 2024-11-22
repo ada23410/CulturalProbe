@@ -11,6 +11,11 @@ const handleLineWebhook = async (req, res) => {
   const events = req.body.events;
 
   for (const event of events) {
+    console.log('接收到的事件:', JSON.stringify(event, null, 2));
+    if (!event || !event.type || !event.message) {
+      console.error('Invalid event structure:', event);
+      continue; // 跳過不完整的事件
+    }
     if (event.type === 'message') {
       const messageType = event.message.type;
       const userId = event.source.userId;

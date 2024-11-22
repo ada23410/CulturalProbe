@@ -6,16 +6,12 @@ const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
     console.log('Buffer 大小:', buffer.length);
     console.log('Content-Type:', contentType);
     try {
-      console.log('準備上傳到 Firebase, 文件名:', fileName);
-      if (!bucket.name) {
-        throw new Error('Firebase Storage Bucket 未正確初始化');
+      if (!bucket || !bucket.file) {
+        throw new Error('Firebase Storage Bucket 未正確初始化或方法不存在');
       }
       const file = bucket.file(fileName);
       console.log('上傳的文件 blob:', file);
-      if (!fileName) {
-        throw new Error('fileName 為空，無法創建文件對象');
-      }
-
+      
       // 創建寫入流，將文件數據寫入 Storage
       const stream = file.createWriteStream({
         metadata: {

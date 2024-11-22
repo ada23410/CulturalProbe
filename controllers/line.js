@@ -76,6 +76,7 @@ const handleLineWebhook = async (req, res) => {
 
           // 上傳音訊到 Firebase
           const fileName = `audio/${event.message.id.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
+          console.log(`檔案位置:`, fileName)
           const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
           console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
 

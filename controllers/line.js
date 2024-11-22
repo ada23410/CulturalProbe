@@ -5,6 +5,7 @@ const axios = require('axios');
 const { saveText } = require('../service/saveText'); // 保存文字消息
 const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur
 const { fetchContent } = require('../service/getContent'); // 獲取多媒體內容
+const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const MediaModel = require('../models/mediaModel'); // media Model
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;

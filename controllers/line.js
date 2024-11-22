@@ -64,29 +64,20 @@ const handleLineWebhook = async (req, res) => {
           console.log('圖片訊息已保存到資料庫:', imgurLink);
 
         } else if (messageType === 'audio') {
-           // 處理音訊消息
-           const messageId = event.message.id;
-           console.log(`處理音訊訊息, messageId: ${messageId}`);
- 
-           // 從 LINE 獲取音訊內容
-           const audioBuffer = await fetchContent(messageId, LINE_ACCESS_TOKEN, 'audio');
- 
-           // 上傳到 Firebase
-           const firebaseUrl = await uploadAudioToFirebase(audioBuffer, `audio/${messageId}.m4a`);
-           console.log('音訊已上傳到 Firebase:', firebaseUrl);
- 
-           // 回覆用戶
-           await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
- 
+          console.log(`處理音訊訊息, messageId: ${event.message.id}`);
+          const firebaseUrl = await fetchContent(event);
+          console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
+          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
+
            // 儲存音訊連結到資料庫
            const audioMessage = new MediaModel({
-             userId,
-             messageType: 'audio',
-             mediaUrl: firebaseUrl,
+              userId,
+              messageType: 'audio',
+              mediaUrl: firebaseUrl,
            });
  
-           await audioMessage.save();
-           console.log('音訊訊息已保存到資料庫:', firebaseUrl);
+          await audioMessage.save();
+          console.log('音訊訊息已保存到資料庫:', firebaseUrl);
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);

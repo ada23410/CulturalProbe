@@ -1,19 +1,12 @@
-const dotenv= require('dotenv');
-dotenv.config({ path: './config.env' });
 const axios = require('axios');
 
-const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-
 // 從 LINE 獲取多媒體內容
-const fetchContent = async (event) => {
+const fetchContent = async (messageId, accessToken) => {
   try {
-    const messageId = event.message.id;// 從event提取message ID
-    console.log(`開始從 LINE 獲取內容, messageId: ${messageId}`);
-
     const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       responseType: 'arraybuffer', // 接收二進制數據
     });

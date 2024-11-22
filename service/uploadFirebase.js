@@ -1,9 +1,14 @@
-const { bucket } = require('./firebase');
+const { bucket } = require('./firebase'); // firebase admin
 
 // 上傳音訊至 Firebase
 const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
     try {
-      const blob = bucket.file(fileName);
+
+       // 確保 Buffer 有效
+      if (!buffer || buffer.length === 0) {
+        throw new Error('無效的音訊 Buffer');
+      }
+      const blob = bucket.file(fileName); // 建議上傳對象
       console.log('準備將文件上傳到 Firebase:', fileName);
 
       const blobStream = blob.createWriteStream({

@@ -1,22 +1,22 @@
 const path = require('path');
 const axios = require('axios');
-const { saveText } = require('../service/saveText'); // 保存文字消息的逻辑
-const { uploadToImgur } = require('../service/uploadImgur'); // 上传到 Imgur 的逻辑
-const { fetchContent } = require('../service/getContent'); // 获取多媒体内容的逻辑
-const MediaModel = require('../models/mediaModel'); // 多媒体数据模型
+const { saveText } = require('../service/saveText'); // 保存文字消息
+const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur
+const { fetchContent } = require('../service/getContent'); // 獲取多媒體內容
+const MediaModel = require('../models/mediaModel'); // media Model
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
-const handleLineWebhook = async (req, res) => {
-  const events = req.body.events;
+const handleLineWebhook = async (req, res) => { 
+  const events = req.body.events; 
 
-  for (const event of events) {
+  for (const event of events) {// 遍歷Line所收到的訊息
     console.log('接收到的事件:', JSON.stringify(event, null, 2));
     if (!event || !event.type || !event.message) {
       console.error('Invalid event structure:', event);
       continue; // 跳過不完整的事件
     }
-    if (event.type === 'message') {
+    if (event.type === 'message') { // 是否為文字訊息
       const messageType = event.message.type;
       const userId = event.source.userId;
 
@@ -78,11 +78,11 @@ const handleLineWebhook = async (req, res) => {
           // 回覆用戶
           await replyToUser(replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
            // 儲存音訊連結到資料庫
-           const audioMessage = new MediaModel({
-              userId,
-              messageType: 'audio',
-              mediaUrl: firebaseUrl,
-           });
+          const audioMessage = new MediaModel({
+            userId,
+            messageType: 'audio',
+            mediaUrl: firebaseUrl,
+          });
  
           await audioMessage.save();
           console.log('音訊訊息已保存到資料庫:', firebaseUrl);

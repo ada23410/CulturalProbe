@@ -8,7 +8,7 @@ const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
         throw new Error('Firebase Storage Bucket 未正確初始化');
       }
       const file = bucket.file(fileName);
-      console.log('準備將文件上傳到 Firebase:', fileName);
+      console.log('上傳的文件 blob:', file);
       if (!fileName) {
         throw new Error('fileName 為空，無法創建文件對象');
       }
@@ -24,6 +24,7 @@ const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
         stream.on('finish', async () => {
           try {
             // 獲取下載 URL
+            console.log('文件上傳完成，正在獲取公開 URL...');
             const [url] = await file.getSignedUrl({
               action: 'read',
               expires: '12-31-2500',

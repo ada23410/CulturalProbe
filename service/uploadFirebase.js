@@ -29,34 +29,44 @@ const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
         },
       });
 
-    // 返回 Promise，處理寫入邏輯
-    return new Promise((resolve, reject) => {
-      // 寫入完成
-      stream.on('finish', async () => {
-          try {
-            console.log('文件上傳完成，開始生成公開 URL...');
-            const [url] = await file.getSignedUrl({
-              action: 'read',
-              expires: '12-31-2500', // 設置 URL 有效期
-            });
-            console.log('文件已成功上傳到 Firebase，公開 URL:', url);
-            resolve(url);
-          } catch (error) {
-            console.error('生成公開 URL 失敗:', error.message);
-            reject(new Error('生成公開 URL 失敗'));
-          }
-        });
+      stream.on('finish', () => {
+        console.log('上傳成功');
+      })
 
-        // 寫入失敗
-        stream.on('error', (error) => {
-          console.error('文件上傳過程中失敗:', error.message);
-          reject(new Error('文件上傳到 Firebase 失敗'));
-        });
+      stream.on('error', (err) => {
+        console.log('上傳失敗');
+      })
 
-        // 寫入 Buffer
-        console.log('開始寫入 Buffer 到 Firebase Storage...');
-        stream.end(buffer);
-      });
+      stream.end(buffer);
+
+    // // 返回 Promise，處理寫入邏輯
+    // return new Promise((resolve, reject) => {
+    //   // 寫入完成
+    //   stream.on('finish', async () => {
+    //       try {
+    //         console.log('文件上傳完成，開始生成公開 URL...');
+    //         const [url] = await file.getSignedUrl({
+    //           action: 'read',
+    //           expires: '12-31-2500', // 設置 URL 有效期
+    //         });
+    //         console.log('文件已成功上傳到 Firebase，公開 URL:', url);
+    //         resolve(url);
+    //       } catch (error) {
+    //         console.error('生成公開 URL 失敗:', error.message);
+    //         reject(new Error('生成公開 URL 失敗'));
+    //       }
+    //     });
+
+    //     // 寫入失敗
+    //     stream.on('error', (error) => {
+    //       console.error('文件上傳過程中失敗:', error.message);
+    //       reject(new Error('文件上傳到 Firebase 失敗'));
+    //     });
+
+    //     // 寫入 Buffer
+    //     console.log('開始寫入 Buffer 到 Firebase Storage...');
+    //     stream.end(buffer);
+    //   });
     } catch (error) {
         console.error('文件上傳到 Firebase 失敗:', error.message);
         throw new Error('文件上傳到 Firebase 失敗');

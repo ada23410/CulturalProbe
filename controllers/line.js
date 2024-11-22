@@ -64,6 +64,7 @@ const handleLineWebhook = async (req, res) => {
           console.log('圖片訊息已保存到資料庫:', imgurLink);
 
         } else if (messageType === 'audio') {
+          const messageId = event.message.id; 
           console.log(`處理音訊訊息, messageId: ${messageId}`);
 
           // 獲取音訊內容

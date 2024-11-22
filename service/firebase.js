@@ -19,10 +19,11 @@ const config = {
 // 初始化 Firebase Admin SDK
 admin.initializeApp({
     credential: admin.credential.cert(config),
-    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com` // 修正 Storage Bucket 格式
+    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app` // 修正 Storage Bucket 格式
 });
 
 // 獲取 Storage Bucket 實例
 const bucket = admin.storage().bucket();
+console.log('Firebase Storage Bucket:', bucket.name); 
 
 module.exports = bucket;

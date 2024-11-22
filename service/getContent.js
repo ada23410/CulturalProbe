@@ -27,6 +27,7 @@ const fetchContent = async (event) => {
     const buffer = response.data;
     const contentType = response.headers['content-type'];
     const fileName = `audio/${messageId}.${contentType.split('/')[1]}`;
+    console.log('檔案名稱:', fileName);
 
     // 將音訊上傳到 Firebase
     const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);

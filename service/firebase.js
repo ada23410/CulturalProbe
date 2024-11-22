@@ -24,6 +24,6 @@ admin.initializeApp({
 
 // 獲取 Storage Bucket 實例
 const bucket = admin.storage().bucket();
-console.log('Firebase Storage Bucket:', bucket.name); 
+console.log('Firebase Storage 初始化成功:', bucket.name);
 
 module.exports = bucket;

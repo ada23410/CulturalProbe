@@ -3,8 +3,15 @@ const { bucket } = require('./firebase'); // firebase admin
 // 上傳音訊至 Firebase
 const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
     try {
+      console.log('Bucket 名稱:', bucket.name);
+      if (!bucket.name) {
+        throw new Error('Firebase Storage Bucket 未正確初始化');
+      }
       const file = bucket.file(fileName);
       console.log('準備將文件上傳到 Firebase:', fileName);
+      if (!fileName) {
+        throw new Error('fileName 為空，無法創建文件對象');
+      }
 
       // 創建寫入流，將文件數據寫入 Storage
       const stream = file.createWriteStream({

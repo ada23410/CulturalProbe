@@ -1,6 +1,6 @@
+const admin = require("firebase-admin");
 const dotenv = require('dotenv');
 dotenv.config({ path: './.env' });
-const admin = require("firebase-admin");
 
 // 使用環境變數配置 Firebase
 const config = {

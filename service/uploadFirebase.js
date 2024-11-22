@@ -2,8 +2,11 @@ const { bucket } = require('./firebase'); // firebase admin
 
 // 上傳音訊至 Firebase
 const uploadAudioToFirebase = async (buffer, fileName, contentType) => {
+    console.log('上傳的文件名:', fileName);
+    console.log('Buffer 大小:', buffer.length);
+    console.log('Content-Type:', contentType);
     try {
-      console.log('Bucket 名稱:', bucket.name);
+      console.log('準備上傳到 Firebase, 文件名:', fileName);
       if (!bucket.name) {
         throw new Error('Firebase Storage Bucket 未正確初始化');
       }

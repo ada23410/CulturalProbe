@@ -38,7 +38,7 @@ const handleLineWebhook = async (req, res) => {
           const text = event.message.text;
           try {
               if (text.startsWith("查看任務")) {
-                  await handleTasks(replyToken);
+                await handleTasks(replyToken);
               } else if (text.startsWith("詳細說明-")) {
                   // 提取任務名稱
                   const taskName = text.replace("詳細說明-", "");
@@ -130,23 +130,29 @@ const handleLineWebhook = async (req, res) => {
 
 // 回覆用户的方法
 const replyToUser = async (replyToken, messages) => {
+  const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+
+  const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${LINE_ACCESS_TOKEN}`,
+  };
+
   try {
-    const response = await axios.post(
-      'https://api.line.me/v2/bot/message/reply',
-      {
-        replyToken,
-        messages: Array.isArray(messages) ? messages : [messages], // 確保傳入的是陣列
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    console.log('回覆用戶成功:', response.status);
+      // 發送 POST 請求
+      const response = await axios.post(
+          'https://api.line.me/v2/bot/message/reply',
+          {
+              replyToken,
+              messages: Array.isArray(messages) ? messages : [messages], // 確保傳入的 messages 是陣列
+          },
+          { headers }
+      );
+
+      console.log("成功回覆用戶:", response.status);
+      return response; // 返回回應物件以便後續處理
   } catch (error) {
-    console.error('回覆用戶失敗:', error.response?.data || error.message);
+      console.error("回覆用戶失敗:", error.response?.data || error.message);
+      throw new Error("回覆用戶時發生錯誤");
   }
 };
 

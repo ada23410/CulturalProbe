@@ -6,7 +6,7 @@ const client = new line.messagingApi.MessagingApiClient({
 console.log(client);
 
 // 處理任務相關邏輯
-const handleTasks = async (replyToken) => {
+const handleTasks = async (replyToken, userId, text ) => {
     try {
         const flexMessage = {
             "type": "carousel",

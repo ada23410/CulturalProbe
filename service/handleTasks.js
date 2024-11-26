@@ -9,96 +9,99 @@ console.log(client);
 const handleTasks = async (replyToken, userId, text ) => {
     try {
         const flexMessage = {
-            "type": "carousel",
-            "contents": [
-                {
-                    "type": "bubble",
-                    "hero": {
-                        "type": "image",
-                        "size": "full",
-                        "aspectRatio": "20:13",
-                        "aspectMode": "cover",
-                        "url": "https://developers-resource.landpress.line.me/fx/img/01_5_carousel.png"
-                    },
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": "任務一",
-                                "weight": "bold",
-                                "size": "xl"
-                            },
-                            {
-                                "type": "text",
-                                "text": "這是任務一的描述",
-                                "wrap": true,
-                                "size": "sm"
-                            }
-                        ]
-                    },
-                    "footer": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            {
-                                "type": "button",
-                                "action": {
-                                    "type": "message",
-                                    "label": "詳細說明",
-                                    "text": "詳細說明"
+            type: "flex",
+            altText: "任務列表",
+            contents: {
+                type: "carousel",
+                contents: [
+                    {
+                        type: "bubble",
+                        hero: {
+                            type: "image",
+                            size: "full",
+                            aspectRatio: "20:13",
+                            aspectMode: "cover",
+                            url: "https://developers-resource.landpress.line.me/fx/img/01_5_carousel.png"
+                        },
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "text",
+                                    text: "任務一",
+                                    weight: "bold",
+                                    size: "xl"
                                 },
-                                "style": "primary"
-                            }
-                        ]
-                    }
-                },
-                {
-                    "type": "bubble",
-                    "hero": {
-                        "type": "image",
-                        "size": "full",
-                        "aspectRatio": "20:13",
-                        "aspectMode": "cover",
-                        "url": "https://developers-resource.landpress.line.me/fx/img/01_5_carousel.png"
+                                {
+                                    type: "text",
+                                    text: "這是任務一的描述",
+                                    wrap: true,
+                                    size: "sm"
+                                }
+                            ]
+                        },
+                        footer: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "button",
+                                    action: {
+                                        type: "message",
+                                        label: "詳細說明任務一",
+                                        text: "詳細說明任務一"
+                                    },
+                                    style: "primary"
+                                }
+                            ]
+                        }
                     },
-                    "type": "bubble",
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": "任務二",
-                                "weight": "bold",
-                                "size": "xl"
-                            },
-                            {
-                                "type": "text",
-                                "text": "這是任務二的描述",
-                                "wrap": true,
-                                "size": "sm"
-                            }
-                        ]
-                    },
-                    "footer": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                            {
-                                "type": "button",
-                                "action": {
-                                    "type": "message",
-                                    "label": "詳細說明",
-                                    "text": "詳細說明"
+                    {
+                        type: "bubble",
+                        hero: {
+                            type: "image",
+                            size: "full",
+                            aspectRatio: "20:13",
+                            aspectMode: "cover",
+                            url: "https://developers-resource.landpress.line.me/fx/img/01_5_carousel.png"
+                        },
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "text",
+                                    text: "任務二",
+                                    weight: "bold",
+                                    size: "xl"
                                 },
-                                "style": "primary"
-                            }
-                        ]
+                                {
+                                    type: "text",
+                                    text: "這是任務二的描述",
+                                    wrap: true,
+                                    size: "sm"
+                                }
+                            ]
+                        },
+                        footer: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "button",
+                                    action: {
+                                        type: "message",
+                                        label: "詳細說明任務二",
+                                        text: "詳細說明任務二"
+                                    },
+                                    style: "primary"
+                                }
+                            ]
+                        }
                     }
-                }
-            ]
+                ]
+            }
         };     
         await client.replyMessage(replyToken, flexMessage);
         console.log('成功回覆 Flex Message');

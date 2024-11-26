@@ -104,7 +104,7 @@ const handleTasks = async (replyToken, userId, text ) => {
                 ]
             }
         };     
-        await client.replyToUser(replyToken, flexMessage);
+        await replyToUser(replyToken, flexMessage);
         console.log('成功回覆 Flex Message');
     } catch (error) {
         console.error('處理任務失敗:', error.message);

@@ -30,12 +30,12 @@ const handleLineWebhook = async (req, res) => {
     if (event.type === 'message') { // 是否為文字訊息
       const messageType = event.message.type;
       const userId = event.source.userId;
+      const replyToken = event.replyToken;
 
       try {
         // 處理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
-          const replyToken = event.replyToken;
           try {
               if (text.startsWith("查看任務")) {
                   await handleTasks(replyToken);
@@ -54,10 +54,8 @@ const handleLineWebhook = async (req, res) => {
                       });
                   }
               } else {
-                  await replyToUser(replyToken, {
-                      type: "text",
-                      text: "未識別的指令，請輸入正確的指令。",
-                  });
+                await saveText(userId, text);
+                await replyToUser(replyToken, `您的訊息已儲存: ${text}`);
               }
           } catch (error) {
               console.error("處理消息失敗:", error.message);
@@ -84,7 +82,7 @@ const handleLineWebhook = async (req, res) => {
           console.log('圖片已上傳到 Imgur:', imgurLink);
 
           // 回覆用戶
-          await replyToUser(event.replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
+          await replyToUser(replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
 
           // 儲存圖片連結到資料庫
           const imageMessage = new MediaModel({
@@ -110,7 +108,7 @@ const handleLineWebhook = async (req, res) => {
           console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
 
           // 回覆用戶
-          await replyToUser(event.replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
+          await replyToUser(replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
 
           // 儲存音訊到資料庫
           await MediaModel.create({
@@ -122,7 +120,7 @@ const handleLineWebhook = async (req, res) => {
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);
-        await replyToUser(event.replyToken, '處理消息時發生錯誤，請稍後再試！');
+        await replyToUser(replyToken, '處理消息時發生錯誤，請稍後再試！');
       }
     }
   }

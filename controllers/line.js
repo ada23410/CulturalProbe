@@ -35,29 +35,30 @@ const handleLineWebhook = async (req, res) => {
         // 處理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
+          const replyToken = event.replyToken;
           try {
-            if (text.startsWith("查看任務")) {
-                await handleTasks(replyToken);
-            } else if (text.startsWith("詳細說明-")) {
-                // 提取任務名稱
-                const taskName = text.replace("詳細說明-", "");
-                if (taskDetails[taskName]) {
-                    await replyToUser(replyToken, {
-                        type: "text",
-                        text: taskDetails[taskName],
-                    });
-                } else {
-                    await replyToUser(replyToken, {
-                        type: "text",
-                        text: "抱歉，無法找到對應的任務詳細說明。",
-                    });
-                }
-            } else {
-                await replyToUser(replyToken, {
-                    type: "text",
-                    text: "未識別的指令，請輸入正確的指令。",
-                });
-            }
+              if (text.startsWith("查看任務")) {
+                  await handleTasks(replyToken);
+              } else if (text.startsWith("詳細說明-")) {
+                  // 提取任務名稱
+                  const taskName = text.replace("詳細說明-", "");
+                  if (taskDetails[taskName]) {
+                      await replyToUser(replyToken, {
+                          type: "text",
+                          text: taskDetails[taskName],
+                      });
+                  } else {
+                      await replyToUser(replyToken, {
+                          type: "text",
+                          text: "抱歉，無法找到對應的任務詳細說明。",
+                      });
+                  }
+              } else {
+                  await replyToUser(replyToken, {
+                      type: "text",
+                      text: "未識別的指令，請輸入正確的指令。",
+                  });
+              }
           } catch (error) {
               console.error("處理消息失敗:", error.message);
               await replyToUser(replyToken, "處理消息時發生錯誤，請稍後再試！");

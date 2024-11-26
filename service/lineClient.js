@@ -1,4 +1,3 @@
-const fs = require('fs-extra');
 const line = require('@line/bot-sdk');
 const dotenv = require('dotenv');
 dotenv.config({ path: './.env'});

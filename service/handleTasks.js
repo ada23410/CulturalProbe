@@ -1,3 +1,4 @@
+const line = require('@line/bot-sdk');
 const { client } = require('../service/lineClient');
 
 // 處理任務相關邏輯
@@ -14,10 +15,8 @@ const handleTasks = async (replyToken, taskCommand) => {
             replyMessage = '抱歉，未能識別您的任務指令。請嘗試點擊任務清單中的按鈕。';
         }
 
-        await client.replyMessage(replyToken, {
-            type: 'text',
-            text: replyMessage,
-        });
+        await client.replyMessage(replyToken, flexMessage);
+        console.log('Flex Message 已成功回覆用戶');
     } catch (error) {
         console.error('處理任務失敗:', error.message);
         throw new Error('任務處理失敗');

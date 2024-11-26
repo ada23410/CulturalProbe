@@ -1,6 +1,6 @@
 const TempStorageModel = require('../models/tempStorageMpdel');
 const TaskModel = require('../models/taskModel');
-const { replyToUser } = require('../service/replyContent');
+const replyToUser = require('../service/replyContent');
 
 const classifyContent = async (userId, taskName, replyToken) => {
     try {

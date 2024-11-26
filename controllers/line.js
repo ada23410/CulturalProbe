@@ -29,12 +29,12 @@ const handleLineWebhook = async (req, res) => {
         if (messageType === 'text') {
           const text = event.message.text;
            // 檢測是否為任務相關指令
-          if (messageText.startsWith('查看任務')) {
-              await handleTasks(event.replyToken, messageText); // 呼叫任務處理邏輯
+          if (text.startsWith('查看任務')) {
+              await handleTasks(event.replyToken, text); // 呼叫任務處理邏輯
             } else {
               // 預設處理文字訊息
-              await saveText(userId, messageText);
-              await replyToUser(event.replyToken, `您的訊息已儲存: ${messageText}`);
+              await saveText(userId, text);
+              await replyToUser(event.replyToken, `您的訊息已儲存: ${text}`);
           }
         } else if (messageType === 'image') {
           const messageId = event.message.id;

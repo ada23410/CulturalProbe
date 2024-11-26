@@ -55,11 +55,17 @@ const handleLineWebhook = async (req, res) => {
                   }
               } else {
                 await saveText(userId, text);
-                await replyToUser(replyToken, `您的訊息已儲存: ${text}`);
+                await replyToUser(replyToken, {
+                  type: "text",
+                  text: `您的訊息已儲存: ${text}`,
+                });
               }
           } catch (error) {
               console.error("處理消息失敗:", error.message);
-              await replyToUser(replyToken, "處理消息時發生錯誤，請稍後再試！");
+              await replyToUser(replyToken, {
+                type: "text",
+                text: "處理消息時發生錯誤，請稍後再試！",
+              });
           }
         } else if (messageType === 'image') {
           const messageId = event.message.id;
@@ -149,7 +155,6 @@ const replyToUser = async (replyToken, messages) => {
       );
 
       console.log("成功回覆用戶:", response.status);
-      return response; // 返回回應物件以便後續處理
   } catch (error) {
       console.error("回覆用戶失敗:", error.response?.data || error.message);
       throw new Error("回覆用戶時發生錯誤");

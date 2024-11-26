@@ -76,48 +76,51 @@ const handleLineWebhook = async (req, res) => {
           const messageId = event.message.id;
           console.log(`處理圖片訊息, messageId: ${messageId}`);
 
-          // 從 LINE 獲取圖片內容
-          const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
-          const response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
-            },
-            responseType: 'arraybuffer',
-          });
-
-          console.log('成功獲取圖片內容，大小:', response.headers['content-length']);
-          const base64Content = Buffer.from(response.data).toString('base64');
-
-          // 上傳到 Imgur
-          const imgurLink = await uploadToImgur(base64Content);
-          console.log('圖片已上傳到 Imgur:', imgurLink);
-
-          // 回覆用戶
           await replyToUser(replyToken, {
             type: "text",
-            text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
+            text: "圖片已收到，正在處理，請稍候...",
           });
-          // 儲存圖片連結到資料庫
-          // const imageMessage = new MediaModel({
-          //   userId,
-          //   messageType: 'image',
-          //   imgurLink,
-          // });
+          try{
+            // 從 LINE 獲取圖片內容
+            const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+            const response = await axios.get(url, {
+              headers: {
+                Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
+              },
+              responseType: 'arraybuffer',
+            });
 
-          // await imageMessage.save();
-          await TempStorageModel.create({
-            userId,
-            content: imgurLink,
-            contentType: "image",
-          });
+            console.log('成功獲取圖片內容，大小:', response.headers['content-length']);
+            const base64Content = Buffer.from(response.data).toString('base64');
 
-          await replyToUser(replyToken, {
-            type: "text",
-            text: "已接收到圖片內容，請選擇任務以進行分類。",
-          });
+            // 上傳到 Imgur
+            const imgurLink = await uploadToImgur(base64Content);
+            console.log('圖片已上傳到 Imgur:', imgurLink);
 
-          console.log('圖片訊息已保存到資料庫:', imgurLink);
+            // 儲存圖片連結到資料庫
+            // const imageMessage = new MediaModel({
+            //   userId,
+            //   messageType: 'image',
+            //   imgurLink,
+            // });
 
+            // await imageMessage.save();
+            await TempStorageModel.create({
+              userId,
+              content: imgurLink,
+              contentType: "image",
+            });
+
+            // 回覆用戶
+            await replyToUser(replyToken, {
+              type: "text",
+              text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
+            });
+
+            console.log('圖片訊息已保存到資料庫:', imgurLink);
+          } catch(error) {
+            console.error("圖片處理失敗:", error.message);
+          }
         } else if (messageType === 'audio') {
           const messageId = event.message.id;
           console.log(`處理音訊訊息, messageId: ${messageId}`);

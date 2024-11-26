@@ -6,21 +6,64 @@ const client = new line.messagingApi.MessagingApiClient({
 console.log(client);
 
 // 處理任務相關邏輯
-const handleTasks = async (replyToken, taskCommand) => {
+const handleTasks = async (replyToken) => {
     try {
-        let replyMessage = '';
-        if (taskCommand === '查看任務一詳細說明') {
-            replyMessage = '任務一內容：\n1. 記錄您過去三天的飲食。\n2. 請記錄每餐的時間、內容和份量。\n3. 回覆此帳號即可完成。';
-        } else if (taskCommand === '查看任務二詳細說明') {
-            replyMessage = '任務二內容：\n1. 記錄過去一週的運動習慣。\n2. 記錄每天運動時長和類型。\n3. 回覆此帳號即可完成。';
-        } else if (taskCommand === '查看任務三詳細說明') {
-            replyMessage = '任務三內容：\n1. 請記錄您的睡眠時間和睡眠質量。\n2. 回覆此帳號即可完成。';
-        } else {
-            replyMessage = '抱歉，未能識別您的任務指令。請嘗試點擊任務清單中的按鈕。';
-        }
-
-        await client.replyMessage(replyToken, flexMessage);
-        console.log('Flex Message 已成功回覆用戶');
+        const flexMessage = {
+            type: 'flex',
+            altText: '任務清單',
+            contents: {
+                type: 'carousel',
+                contents: [
+                {
+                    type: 'bubble',
+                    body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        { type: 'text', text: '任務一', weight: 'bold', size: 'xl' },
+                        { type: 'text', text: '這是任務一的描述', wrap: true, size: 'sm' },
+                    ],
+                    },
+                    footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        {
+                        type: 'button',
+                        action: { type: 'message', label: '查看任務一', text: '查看任務一' },
+                        style: 'primary',
+                        },
+                    ],
+                    },
+                },
+                {
+                    type: 'bubble',
+                    body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        { type: 'text', text: '任務二', weight: 'bold', size: 'xl' },
+                        { type: 'text', text: '這是任務二的描述', wrap: true, size: 'sm' },
+                    ],
+                    },
+                    footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        {
+                        type: 'button',
+                        action: { type: 'message', label: '查看任務二', text: '查看任務二' },
+                        style: 'primary',
+                        },
+                    ],
+                    },
+                },
+                ],
+            },
+            };
+        
+            await client.replyMessage(replyToken, flexMessage);
+            console.log('成功回覆 Flex Message');
     } catch (error) {
         console.error('處理任務失敗:', error.message);
         throw new Error('任務處理失敗');

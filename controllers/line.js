@@ -25,16 +25,17 @@ const handleLineWebhook = async (req, res) => {
       const userId = event.source.userId;
 
       try {
-        // 处理文字消息
+        // 處理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
            // 檢測是否為任務相關指令
           if (text.startsWith('查看任務')) {
-              await handleTasks(event.replyToken, text); // 呼叫任務處理邏輯
-            } else {
-              // 預設處理文字訊息
-              await saveText(userId, text);
-              await replyToUser(event.replyToken, `您的訊息已儲存: ${text}`);
+            // **處理任務相關邏輯**
+            await handleTasks(event.replyToken, text);
+          } else {
+            // **儲存文字訊息**
+            await saveText(userId, text);
+            await replyToUser(event.replyToken, `您的訊息已儲存: ${text}`);
           }
         } else if (messageType === 'image') {
           const messageId = event.message.id;
@@ -103,14 +104,14 @@ const handleLineWebhook = async (req, res) => {
   res.status(200).send('OK');
 };
 
-// 回复用户的方法
-const replyToUser = async (replyToken, message) => {
+// 回覆用户的方法
+const replyToUser = async (replyToken, messages) => {
   try {
     const response = await axios.post(
       'https://api.line.me/v2/bot/message/reply',
       {
         replyToken,
-        messages: [{ type: 'text', text: message }],
+        messages: Array.isArray(messages) ? messages : [messages], // 確保傳入的是陣列
       },
       {
         headers: {

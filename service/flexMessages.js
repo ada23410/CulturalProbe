@@ -16,13 +16,13 @@ const generateTaskCarousel = () => ({
                 contents: [
                     {
                         type: 'text',
-                        text: '任務一：飲食調查',
+                        text: '任務一：飲食紀錄',
                         weight: 'bold',
-                        size: 'md',
+                        size: 'lg',
                     },
                     {
                         type: 'text',
-                        text: '請記錄您今天的飲食情況。',
+                        text: '記錄您最近三天的飲食情況。',
                         size: 'sm',
                         wrap: true,
                         color: '#666666',
@@ -35,7 +35,7 @@ const generateTaskCarousel = () => ({
                 contents: [
                     {
                         type: 'button',
-                        style: 'link',
+                        style: 'primary',
                         action: {
                             type: 'message',
                             label: '查看詳細說明',
@@ -45,7 +45,7 @@ const generateTaskCarousel = () => ({
                 ],
             },
         },
-        // 增加其他任務泡泡
+        // 可以添加更多任務泡泡
     ],
 });
 

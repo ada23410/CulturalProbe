@@ -6,6 +6,7 @@ const { saveText } = require('../service/saveText'); // 保存文字消息
 const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur
 const { fetchContent } = require('../service/getContent'); // 獲取多媒體內容
 const { uploadAudioToFirebase } = require('../service/uploadFirebase');
+const { handleTasks } = require('../service/handleTasks');
 const MediaModel = require('../models/mediaModel'); // media Model
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -27,12 +28,14 @@ const handleLineWebhook = async (req, res) => {
         // 处理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
-          await saveText(userId, text); // 保存到 MongoDB
-          console.log('文字消息已保存:', text);
-
-          // 回覆用戶
-          await replyToUser(event.replyToken, `文字訊息已保存: ${text}`);
-
+           // 檢測是否為任務相關指令
+          if (messageText.startsWith('查看任務')) {
+              await handleTasks(event.replyToken, messageText); // 呼叫任務處理邏輯
+            } else {
+              // 預設處理文字訊息
+              await saveText(userId, messageText);
+              await replyToUser(event.replyToken, `您的訊息已儲存: ${messageText}`);
+          }
         } else if (messageType === 'image') {
           const messageId = event.message.id;
           console.log(`處理圖片訊息, messageId: ${messageId}`);

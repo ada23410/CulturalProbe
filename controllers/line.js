@@ -8,7 +8,7 @@ const { fetchContent } = require('../service/getContent'); // 獲取多媒體內
 const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
 const { classifyContent } = require('../service/classifyContent');
-const { pushToUser } = require('../service/pushContent');
+const pushToUser = require('../service/pushContent');
 const MediaModel = require('../models/mediaModel'); // media Model
 const TempStorageModel = require('../models/tempStorageMpdel'); // 引入暫存區模型
 

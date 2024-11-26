@@ -88,8 +88,10 @@ const handleLineWebhook = async (req, res) => {
           console.log('圖片已上傳到 Imgur:', imgurLink);
 
           // 回覆用戶
-          await replyToUser(replyToken, `圖片已成功上傳到 Imgur: ${imgurLink}`);
-
+          await replyToUser(replyToken, {
+            type: "text",
+            text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
+          });
           // 儲存圖片連結到資料庫
           const imageMessage = new MediaModel({
             userId,
@@ -114,7 +116,10 @@ const handleLineWebhook = async (req, res) => {
           console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
 
           // 回覆用戶
-          await replyToUser(replyToken, `音訊已成功上傳到 Firebase: ${firebaseUrl}`);
+          await replyToUser(replyToken,{
+            type: "text",
+            text: `音訊已成功上傳到 Firebase: ${firebaseUrl}`
+          });
 
           // 儲存音訊到資料庫
           await MediaModel.create({
@@ -126,7 +131,10 @@ const handleLineWebhook = async (req, res) => {
         }
       } catch (error) {
         console.error('消息處理失敗:', error.message);
-        await replyToUser(replyToken, '處理消息時發生錯誤，請稍後再試！');
+        await replyToUser(replyToken,{
+          type: "text",
+          text: "處理音訊時發生錯誤，請稍後再試！",
+        });
       }
     }
   }

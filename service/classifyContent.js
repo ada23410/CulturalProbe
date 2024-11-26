@@ -1,3 +1,6 @@
+const TaskModel = require('../models/taskModel');
+const { replyToUser } = require('../service/replyContent');
+
 const classifyContent = async (userId, taskName, replyToken) => {
     try {
       // 查找未分類的內容
@@ -36,4 +39,4 @@ const classifyContent = async (userId, taskName, replyToken) => {
     }
   };
 
-module.exports = classifyContent
+module.exports = { classifyContent };

@@ -10,7 +10,6 @@ const { handleTasks } = require('../service/handleTasks');
 const { classifyContent } = require('../service/classifyContent');
 const MediaModel = require('../models/mediaModel'); // media Model
 const TempStorageModel = require('../models/tempStorageMpdel'); // 引入暫存區模型
-const TaskModel = require('../models/taskModel'); // 引入已分類任務模型
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -111,10 +110,12 @@ const handleLineWebhook = async (req, res) => {
             content: imgurLink,
             contentType: "image",
           });
+
           await replyToUser(replyToken, {
             type: "text",
             text: "已接收到圖片內容，請選擇任務以進行分類。",
           });
+
           console.log('圖片訊息已保存到資料庫:', imgurLink);
 
         } else if (messageType === 'audio') {

@@ -15,20 +15,13 @@ const handleTasks = async (replyToken) => {
                 contents: [
                     {
                         type: "bubble",
-                        hero: {
-                            type: "image",
-                            size: "full",
-                            aspectRatio: "20:13",
-                            aspectMode: "cover",
-                            url: "https://i.imgur.com/KUNRp70.jpeg"
-                        },
                         body: {
                             type: "box",
                             layout: "vertical",
                             contents: [
                                 {
                                     type: "text",
-                                    text: "每日活動紀錄",
+                                    text: "01 每日活動紀錄",
                                     weight: "bold",
                                     size: "md"
                                 }
@@ -52,20 +45,13 @@ const handleTasks = async (replyToken) => {
                     },
                     {
                         type: "bubble",
-                        hero: {
-                            type: "image",
-                            size: "full",
-                            aspectRatio: "20:13",
-                            aspectMode: "cover",
-                            url: "https://i.imgur.com/KUNRp70.jpeg"
-                        },
                         body: {
                             type: "box",
                             layout: "vertical",
                             contents: [
                                 {
                                     type: "text",
-                                    text: "情境紀錄卡",
+                                    text: "02 情境紀錄卡",
                                     weight: "bold",
                                     size: "md"
                                 }
@@ -89,20 +75,13 @@ const handleTasks = async (replyToken) => {
                     },
                     {
                         type: "bubble",
-                        hero: {
-                            type: "image",
-                            size: "full",
-                            aspectRatio: "20:13",
-                            aspectMode: "cover",
-                            url: "https://i.imgur.com/KUNRp70.jpeg"
-                        },
                         body: {
                             type: "box",
                             layout: "vertical",
                             contents: [
                                 {
                                     type: "text",
-                                    text: "社交情境日記",
+                                    text: "03 社交情境日記",
                                     weight: "bold",
                                     size: "md"
                                 }
@@ -126,20 +105,13 @@ const handleTasks = async (replyToken) => {
                     },
                     {
                         type: "bubble",
-                        hero: {
-                            type: "image",
-                            size: "full",
-                            aspectRatio: "20:13",
-                            aspectMode: "cover",
-                            url: "https://i.imgur.com/KUNRp70.jpeg"
-                        },
                         body: {
                             type: "box",
                             layout: "vertical",
                             contents: [
                                 {
                                     type: "text",
-                                    text: "感受連連看",
+                                    text: "04 感受連連看",
                                     weight: "bold",
                                     size: "md"
                                 }

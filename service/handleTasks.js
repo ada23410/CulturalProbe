@@ -4,10 +4,8 @@ const client = new line.messagingApi.MessagingApiClient({
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
 });
 
-console.log(client);
-
 // 處理任務相關邏輯
-const handleTasks = async (replyToken, userId, text ) => {
+const handleTasks = async (replyToken) => {
     try {
         const flexMessage = {
             type: "flex",
@@ -22,7 +20,7 @@ const handleTasks = async (replyToken, userId, text ) => {
                             size: "full",
                             aspectRatio: "20:13",
                             aspectMode: "cover",
-                            url: "https://developers-resource.landpress.line.me/fx/img/01_5_carousel.png"
+                            url: "https://i.imgur.com/KUNRp70.jpeg"
                         },
                         body: {
                             type: "box",
@@ -30,15 +28,9 @@ const handleTasks = async (replyToken, userId, text ) => {
                             contents: [
                                 {
                                     type: "text",
-                                    text: "任務一",
+                                    text: "每日活動紀錄",
                                     weight: "bold",
-                                    size: "xl"
-                                },
-                                {
-                                    type: "text",
-                                    text: "這是任務一的描述",
-                                    wrap: true,
-                                    size: "sm"
+                                    size: "md"
                                 }
                             ]
                         },
@@ -50,8 +42,8 @@ const handleTasks = async (replyToken, userId, text ) => {
                                     type: "button",
                                     action: {
                                         type: "message",
-                                        label: "詳細說明任務一",
-                                        text: "詳細說明任務一"
+                                        label: "詳細說明",
+                                        text: "詳細說明-每日活動紀錄"
                                     },
                                     style: "primary"
                                 }
@@ -65,7 +57,7 @@ const handleTasks = async (replyToken, userId, text ) => {
                             size: "full",
                             aspectRatio: "20:13",
                             aspectMode: "cover",
-                            url: "https://developers-resource.landpress.line.me/fx/img/01_5_carousel.png"
+                            url: "https://i.imgur.com/KUNRp70.jpeg"
                         },
                         body: {
                             type: "box",
@@ -73,15 +65,9 @@ const handleTasks = async (replyToken, userId, text ) => {
                             contents: [
                                 {
                                     type: "text",
-                                    text: "任務二",
+                                    text: "情境紀錄卡",
                                     weight: "bold",
-                                    size: "xl"
-                                },
-                                {
-                                    type: "text",
-                                    text: "這是任務二的描述",
-                                    wrap: true,
-                                    size: "sm"
+                                    size: "md"
                                 }
                             ]
                         },
@@ -93,8 +79,82 @@ const handleTasks = async (replyToken, userId, text ) => {
                                     type: "button",
                                     action: {
                                         type: "message",
-                                        label: "詳細說明任務二",
-                                        text: "詳細說明任務二"
+                                        label: "詳細說明",
+                                        text: "詳細說明-情境紀錄卡"
+                                    },
+                                    style: "primary"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        type: "bubble",
+                        hero: {
+                            type: "image",
+                            size: "full",
+                            aspectRatio: "20:13",
+                            aspectMode: "cover",
+                            url: "https://i.imgur.com/KUNRp70.jpeg"
+                        },
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "text",
+                                    text: "社交情境日記",
+                                    weight: "bold",
+                                    size: "md"
+                                }
+                            ]
+                        },
+                        footer: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "button",
+                                    action: {
+                                        type: "message",
+                                        label: "詳細說明",
+                                        text: "詳細說明-社交情境日記"
+                                    },
+                                    style: "primary"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        type: "bubble",
+                        hero: {
+                            type: "image",
+                            size: "full",
+                            aspectRatio: "20:13",
+                            aspectMode: "cover",
+                            url: "https://i.imgur.com/KUNRp70.jpeg"
+                        },
+                        body: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "text",
+                                    text: "感受連連看",
+                                    weight: "bold",
+                                    size: "md"
+                                }
+                            ]
+                        },
+                        footer: {
+                            type: "box",
+                            layout: "vertical",
+                            contents: [
+                                {
+                                    type: "button",
+                                    action: {
+                                        type: "message",
+                                        label: "詳細說明",
+                                        text: "詳細說明-感受連連看"
                                     },
                                     style: "primary"
                                 }

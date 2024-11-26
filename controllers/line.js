@@ -11,6 +11,13 @@ const MediaModel = require('../models/mediaModel'); // media Model
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
+const taskDetails = {
+  "每日活動紀錄": "每日活動紀錄是一個用於追蹤您日常活動的工具，幫助您更好地瞭解自己的生活模式。",
+  "情境紀錄卡": "情境紀錄卡用於記錄特定情境下的詳細信息，幫助您分析和改進應對方式。",
+  "社交情境日記": "社交情境日記是一個日記工具，用於反思和記錄您在社交場合中的行為與感受。",
+  "感受連連看": "感受連連看是一個有趣的活動，幫助您聯繫日常感受與情境之間的關係。",
+};
+
 const handleLineWebhook = async (req, res) => { 
   const events = req.body.events; 
 
@@ -28,14 +35,32 @@ const handleLineWebhook = async (req, res) => {
         // 處理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
-           // 檢測是否為任務相關指令
-          if (text.startsWith('查看任務')) {
-            // 處理任務相關邏輯
-            await handleTasks(event.replyToken);
-          } else {
-            // 儲存文字訊息
-            await saveText(userId, text);
-            await replyToUser(event.replyToken, `您的訊息已儲存: ${text}`);
+          try {
+            if (text.startsWith("查看任務")) {
+                await handleTasks(replyToken);
+            } else if (text.startsWith("詳細說明-")) {
+                // 提取任務名稱
+                const taskName = text.replace("詳細說明-", "");
+                if (taskDetails[taskName]) {
+                    await replyToUser(replyToken, {
+                        type: "text",
+                        text: taskDetails[taskName],
+                    });
+                } else {
+                    await replyToUser(replyToken, {
+                        type: "text",
+                        text: "抱歉，無法找到對應的任務詳細說明。",
+                    });
+                }
+            } else {
+                await replyToUser(replyToken, {
+                    type: "text",
+                    text: "未識別的指令，請輸入正確的指令。",
+                });
+            }
+          } catch (error) {
+              console.error("處理消息失敗:", error.message);
+              await replyToUser(replyToken, "處理消息時發生錯誤，請稍後再試！");
           }
         } else if (messageType === 'image') {
           const messageId = event.message.id;

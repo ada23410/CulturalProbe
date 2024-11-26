@@ -56,6 +56,9 @@ const handleLineWebhook = async (req, res) => {
                           text: "抱歉，無法找到對應的任務詳細說明。",
                       });
                   }
+              } else if(text.startsWith("選擇任務")) { 
+                const taskName = text.replace("選擇任務 ", "").trim();
+                await classifyContent(userId, taskName, replyToken);
               } else {
                 await saveText(userId, text);
                 await replyToUser(replyToken, {

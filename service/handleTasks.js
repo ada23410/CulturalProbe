@@ -1,4 +1,5 @@
 const line = require('@line/bot-sdk');
+const replyToUser = require('./replyContent');
 const client = new line.messagingApi.MessagingApiClient({
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
 });
@@ -103,7 +104,7 @@ const handleTasks = async (replyToken, userId, text ) => {
                 ]
             }
         };     
-        await client.replyMessage(replyToken, flexMessage);
+        await client.replyToUser(replyToken, flexMessage);
         console.log('成功回覆 Flex Message');
     } catch (error) {
         console.error('處理任務失敗:', error.message);

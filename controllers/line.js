@@ -31,7 +31,7 @@ const handleLineWebhook = async (req, res) => {
            // 檢測是否為任務相關指令
           if (text.startsWith('查看任務')) {
             // **處理任務相關邏輯**
-            await handleTasks(event.replyToken, text);
+            await handleTasks(event.replyToken);
           } else {
             // **儲存文字訊息**
             await saveText(userId, text);

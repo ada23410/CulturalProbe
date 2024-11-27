@@ -73,49 +73,37 @@ const handleTextMessage = async (text, userId, replyToken) => {
         } else {
             await replyToUser(replyToken, { type: "text", text: "找不到對應的任務詳細說明。" });
         }
-    } else if (text === "選擇任務") {
-        await handleTaskSelection(userId, replyToken);
-    } else if (text.startsWith("分類內容")) {
-        // 提取內容 ID
-        const [, contentId] = text.split(" ");
-        if (contentId) {
-            // 提示用戶選擇任務名稱
-            const quickReplyOptions = taskDetails.map(task => ({
-                type: "action",
-                action: {
-                    type: "message",
-                    label: task.taskName,
-                    text: `分類任務 ${contentId} ${task.taskName}`,
-                },
-            }));
-
-            await replyToUser(replyToken, {
-                type: "text",
-                text: "請選擇任務名稱進行分類：",
-                quickReply: {
-                    items: quickReplyOptions,
-                },
-            });
-        } else {
-            await replyToUser(replyToken, { type: "text", text: "無法識別要分類的內容。" });
-        }
-    } else if (text.startsWith("分類任務")) {
-        // 執行分類操作
-        const [, contentId, taskName] = text.split(" ");
-        if (contentId && taskName) {
-            await classifyContent(userId, taskName, replyToken, contentId);
-        } else {
-            await replyToUser(replyToken, { type: "text", text: "無法執行分類操作，請重新選擇。" });
-        }
+    } else if (taskDetails.some(task => task.taskName === text)) {
+        // 當文字是任務名稱時，分類現有暫存內容
+        await classifyContent(userId, text, replyToken);
     } else {
-        // 儲存其他文字消息到 TempStorageModel
-        await TempStorageModel.create({
+        // 保存非指令文字到 TempStorageModel
+        const tempContent = await TempStorageModel.create({
             userId,
             content: text,
             contentType: "text",
             timestamp: new Date(),
         });
-        await promptUserToClassify(userId, replyToken);
+
+        console.log('文字已儲存到暫存區，ID:', tempContent._id);
+
+        // 提示用戶即時分類
+        const quickReplyOptions = taskDetails.map(task => ({
+            type: "action",
+            action: {
+                type: "message",
+                label: task.taskName,
+                text: `分類任務 ${tempContent._id} ${task.taskName}`,
+            },
+        }));
+
+        await replyToUser(replyToken, {
+            type: "text",
+            text: "收到您的文字，請選擇任務進行分類：",
+            quickReply: {
+                items: quickReplyOptions,
+            },
+        });
     }
 };
 
@@ -141,8 +129,23 @@ const handleImageMessage = async (messageId, userId, replyToken) => {
             timestamp: new Date(),
         });
 
-        // 提示用戶分類
-        await promptUserToClassify(userId, replyToken);
+        console.log('圖片暫存成功:', tempContent._id);
+
+        // 提示用戶即時分類
+        await replyToUser(replyToken, {
+            type: "text",
+            text: "收到您的圖片，請選擇任務進行分類。",
+            quickReply: {
+                items: taskDetails.map(task => ({
+                    type: "action",
+                    action: {
+                        type: "message",
+                        label: task.taskName,
+                        text: `分類任務 ${tempContent._id} ${task.taskName}`,
+                    },
+                })),
+            },
+        });
     } catch (error) {
         console.error("圖片處理失敗:", error.message);
         await replyToUser(replyToken, { type: "text", text: "處理圖片時發生錯誤，請稍後再試！" });
@@ -166,8 +169,23 @@ const handleAudioMessage = async (messageId, userId, replyToken) => {
             timestamp: new Date(),
         });
 
-        // 提示用戶分類
-        await promptUserToClassify(userId, replyToken);
+        console.log('音訊暫存成功:', tempContent._id);
+
+        // 提示用戶即時分類
+        await replyToUser(replyToken, {
+            type: "text",
+            text: "收到您的音訊，請選擇任務進行分類。",
+            quickReply: {
+                items: taskDetails.map(task => ({
+                    type: "action",
+                    action: {
+                        type: "message",
+                        label: task.taskName,
+                        text: `分類任務 ${tempContent._id} ${task.taskName}`,
+                    },
+                })),
+            },
+        });
     } catch (error) {
         console.error("音訊處理失敗:", error.message);
         await replyToUser(replyToken, { type: "text", text: "處理音訊時發生錯誤，請稍後再試！" });

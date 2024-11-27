@@ -75,18 +75,21 @@ const handleTextMessage = async (text, userId, replyToken) => {
         }
     } else if (text === "選擇任務") {
         await handleTaskSelection(userId, replyToken);
-    } else if (taskDetails.some(task => task.taskName === text)) {
-        // 分類已存的未分類消息
-        await classifyContent(userId, text, replyToken);
+    } else if (text.startsWith("分類內容")) {
+        const [, contentId] = text.split(" ");
+        if (contentId) {
+            await classifyContent(userId, null, replyToken, contentId);
+        } else {
+            await replyToUser(replyToken, { type: "text", text: "無法識別要分類的內容。" });
+        }
     } else {
-        // 儲存其他文字消息到 TempStorageModel
+        // 非指令文字訊息，存儲並提示分類
         await TempStorageModel.create({
             userId,
             content: text,
             contentType: "text",
             timestamp: new Date(),
         });
-        // await replyToUser(replyToken, { type: "text", text: `您的文字訊息已記錄，請稍後分類！` });
         await promptUserToClassify(userId, replyToken);
     }
 };
@@ -105,7 +108,7 @@ const handleImageMessage = async (messageId, userId, replyToken) => {
 
         console.log('圖片已上傳到 Imgur:', imgurLink);
 
-        // 儲存圖片到 TempStorageModel
+        // 暫存圖片到 TempStorageModel
         await TempStorageModel.create({
             userId,
             content: imgurLink,
@@ -113,10 +116,7 @@ const handleImageMessage = async (messageId, userId, replyToken) => {
             timestamp: new Date(),
         });
 
-        // await replyToUser(replyToken, [
-        //     { type: "text", text: "圖片已收到，正在處理，請稍候..." },
-        //     { type: "text", text: `圖片已成功上傳到 Imgur: ${imgurLink}` },
-        // ]);
+        // 提示用戶分類
         await promptUserToClassify(userId, replyToken);
     } catch (error) {
         console.error("圖片處理失敗:", error.message);
@@ -133,18 +133,15 @@ const handleAudioMessage = async (messageId, userId, replyToken) => {
 
         console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
 
-        // 儲存音訊到 TempStorageModel
+        // 暫存音訊到 TempStorageModel
         await TempStorageModel.create({
             userId,
             content: firebaseUrl,
-            contentType: 'audio',
+            contentType: "audio",
             timestamp: new Date(),
         });
 
-        // await replyToUser(replyToken, {
-        //     type: "text",
-        //     text: `音訊已成功上傳到 Firebase: ${firebaseUrl}，已記錄到未分類任務中。`,
-        // });
+        // 提示用戶分類
         await promptUserToClassify(userId, replyToken);
     } catch (error) {
         console.error("音訊處理失敗:", error.message);

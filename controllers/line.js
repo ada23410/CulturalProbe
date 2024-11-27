@@ -75,11 +75,6 @@ const handleLineWebhook = async (req, res) => {
         } else if (messageType === 'image') {
           const messageId = event.message.id;
           console.log(`處理圖片訊息, messageId: ${messageId}`);
-
-          await replyToUser(replyToken, {
-            type: "text",
-            text: "圖片已收到，正在處理，請稍候...",
-          });
           try{
             // 從 LINE 獲取圖片內容
             const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
@@ -104,10 +99,16 @@ const handleLineWebhook = async (req, res) => {
             });
 
             // 回覆用戶
-            await replyToUser(replyToken, {
-              type: "text",
-              text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
-            });
+            await replyToUser(replyToken,[
+              {
+                type: "text",
+                text: "圖片已收到，正在處理，請稍候...",
+              },
+              {
+                type: "text",
+                text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
+              }
+            ]);
 
             console.log('圖片訊息已保存到資料庫:', imgurLink);
           } catch(error) {

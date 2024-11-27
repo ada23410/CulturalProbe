@@ -3,6 +3,11 @@ const axios = require('axios');
 const replyToUser = async (replyToken, messages) => {
     const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
+    if (!replyToken || typeof replyToken !== "string") {
+        console.error("Invalid replyToken:", replyToken);
+        throw new Error("Invalid replyToken: 無效或遺失的 replyToken");
+    }
+
     const headers = {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${LINE_ACCESS_TOKEN}`,

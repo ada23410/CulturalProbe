@@ -1,14 +1,14 @@
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const axios = require('axios');
-const { saveText } = require('../service/saveText');
 const { uploadToImgur } = require('../service/uploadImgur');
 const { fetchContent } = require('../service/getContent');
 const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
 const handleTaskSelection = require('../service/handleTaskSelection');
-const { processAndClassifyMessage } = require('../service/classifyContent');
+const { classifyContent } = require('../service/classifyContent');
 const taskDetails = require('../service/taskDetails');
+const TempStorageModel = require('../models/tempStorageMpdel');
 const replyToUser = require('../service/replyContent');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -25,7 +25,6 @@ const handleLineWebhook = async (req, res) => {
             continue;
         }
 
-        // 處理文字或多媒體消息
         if (event.type === 'message') {
             const { type: messageType, text, id: messageId } = event.message;
             const userId = event.source.userId;
@@ -45,6 +44,7 @@ const handleLineWebhook = async (req, res) => {
                         break;
                     default:
                         console.warn(`未知的消息類型: ${messageType}`);
+                        await replyToUser(replyToken, { type: "text", text: "不支持的消息類型。" });
                 }
             } catch (error) {
                 console.error('消息處理失敗:', error.message);
@@ -67,7 +67,6 @@ const handleTextMessage = async (text, userId, replyToken) => {
         const taskName = text.replace("詳細說明-", "");
         const taskDetail = taskDetails.find(task => task.taskName === taskName);
         if (taskDetail) {
-            // 拼接詳細說明
             const detailedMessage = formatTaskDetails(taskDetail);
             await replyToUser(replyToken, { type: "text", text: detailedMessage });
         } else {
@@ -76,11 +75,17 @@ const handleTextMessage = async (text, userId, replyToken) => {
     } else if (text === "選擇任務") {
         await handleTaskSelection(userId, replyToken);
     } else if (taskDetails.some(task => task.taskName === text)) {
-        await processAndClassifyMessage(userId, text, replyToken);
+        // 分類已存的未分類消息
+        await classifyContent(userId, text, replyToken);
     } else {
-        // 保存其他文字消息
-        await saveText(userId, text);
-        await replyToUser(replyToken, { type: "text", text: `您的訊息已儲存: ${text}` });
+        // 儲存其他文字消息到 TempStorageModel
+        await TempStorageModel.create({
+            userId,
+            content: text,
+            contentType: "text",
+            timestamp: new Date(),
+        });
+        await replyToUser(replyToken, { type: "text", text: `您的文字訊息已記錄，請稍後分類！` });
     }
 };
 
@@ -98,9 +103,17 @@ const handleImageMessage = async (messageId, userId, replyToken) => {
 
         console.log('圖片已上傳到 Imgur:', imgurLink);
 
+        // 儲存圖片到 TempStorageModel
+        await TempStorageModel.create({
+            userId,
+            content: imgurLink,
+            contentType: "image",
+            timestamp: new Date(),
+        });
+
         await replyToUser(replyToken, [
             { type: "text", text: "圖片已收到，正在處理，請稍候..." },
-            { type: "text", text: `圖片已成功上傳到 Imgur: ${imgurLink}` }
+            { type: "text", text: `圖片已成功上傳到 Imgur: ${imgurLink}` },
         ]);
     } catch (error) {
         console.error("圖片處理失敗:", error.message);
@@ -117,7 +130,18 @@ const handleAudioMessage = async (messageId, userId, replyToken) => {
 
         console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
 
-        await replyToUser(replyToken, { type: "text", text: `音訊已成功上傳到 Firebase: ${firebaseUrl}` });
+        // 儲存音訊到 TempStorageModel
+        await TempStorageModel.create({
+            userId,
+            content: firebaseUrl,
+            contentType: 'audio',
+            timestamp: new Date(),
+        });
+
+        await replyToUser(replyToken, {
+            type: "text",
+            text: `音訊已成功上傳到 Firebase: ${firebaseUrl}，已記錄到未分類任務中。`,
+        });
     } catch (error) {
         console.error("音訊處理失敗:", error.message);
         await replyToUser(replyToken, { type: "text", text: "處理音訊時發生錯誤，請稍後再試！" });

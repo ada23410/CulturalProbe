@@ -61,59 +61,86 @@ const handleLineWebhook = async (req, res) => {
 };
 
 // 處理文字消息
+// 處理文字消息
 const handleTextMessage = async (text, userId, replyToken) => {
-    if (text === "查看任務") {
-        await handleTasks(replyToken);
-    } else if (text.startsWith("詳細說明-")) {
-        const taskName = text.replace("詳細說明-", "");
-        const taskDetail = taskDetails.find(task => task.taskName === taskName);
-        if (taskDetail) {
-            const detailedMessage = formatTaskDetails(taskDetail);
-            await replyToUser(replyToken, { type: "text", text: detailedMessage });
-        } else {
-            await replyToUser(replyToken, { type: "text", text: "找不到對應的任務詳細說明。" });
-        }
-    } else if (text === "選擇任務") {
-        await handleTaskSelection(userId, replyToken);
-    } else if (text.startsWith("分類內容")) {
-        const [, contentId] = text.split(" ");
-        if (contentId) {
-            // 提示用戶選擇分類任務名稱
-            const quickReplyOptions = taskDetails.map(task => ({
-                type: "action",
-                action: {
-                    type: "message",
-                    label: task.taskName,
-                    text: `分類任務 ${contentId} ${task.taskName}`,
-                },
-            }));
+    try {
+        switch (text) {
+            case "查看任務":
+                await handleTasks(replyToken); // 顯示任務列表
+                break;
 
-            await replyToUser(replyToken, {
-                type: "text",
-                text: "請選擇任務名稱進行分類：",
-                quickReply: {
-                    items: quickReplyOptions,
-                },
-            });
-        } else {
-            await replyToUser(replyToken, { type: "text", text: "無法識別要分類的內容。" });
+            case "操作指南":
+                await replyToUser(replyToken, {
+                    type: "text",
+                    text: "歡迎使用！請按照以下步驟完成操作：\n1. 發送消息進行記錄。\n2. 根據提示完成分類。\n3. 您可以隨時輸入「查看任務」查看當前任務。",
+                });
+                break;
+
+            case "聯繫客服":
+                await replyToUser(replyToken, {
+                    type: "text",
+                    text: "如果您需要幫助，請聯繫我們的客服。\nEmail: ada10050616@gmail.com\n電話: 0930510210",
+                });
+                break;
+
+            default:
+                if (text.startsWith("詳細說明-")) {
+                    const taskName = text.replace("詳細說明-", "");
+                    const taskDetail = taskDetails.find(task => task.taskName === taskName);
+                    if (taskDetail) {
+                        const detailedMessage = formatTaskDetails(taskDetail);
+                        await replyToUser(replyToken, { type: "text", text: detailedMessage });
+                    } else {
+                        await replyToUser(replyToken, { type: "text", text: "找不到對應的任務詳細說明。" });
+                    }
+                } else if (text.startsWith("分類內容")) {
+                    const [, contentId] = text.split(" ");
+                    if (contentId) {
+                        // 提示用戶選擇分類任務名稱
+                        const quickReplyOptions = taskDetails.map(task => ({
+                            type: "action",
+                            action: {
+                                type: "message",
+                                label: task.taskName,
+                                text: `分類任務 ${contentId} ${task.taskName}`,
+                            },
+                        }));
+
+                        await replyToUser(replyToken, {
+                            type: "text",
+                            text: "請選擇任務名稱進行分類：",
+                            quickReply: {
+                                items: quickReplyOptions,
+                            },
+                        });
+                    } else {
+                        await replyToUser(replyToken, { type: "text", text: "無法識別要分類的內容。" });
+                    }
+                } else if (text.startsWith("分類任務")) {
+                    const [, contentId, taskName] = text.split(" ");
+                    if (contentId && taskName) {
+                        await classifyContent(userId, taskName, replyToken, contentId);
+                    } else {
+                        await replyToUser(replyToken, { type: "text", text: "分類操作失敗，請重新嘗試。" });
+                    }
+                } else {
+                    // 存儲文字並提示分類
+                    await TempStorageModel.create({
+                        userId,
+                        content: text,
+                        contentType: "text",
+                        timestamp: new Date(),
+                    });
+                    await promptUserToClassify(userId, replyToken);
+                }
+                break;
         }
-    } else if (text.startsWith("分類任務")) {
-        const [, contentId, taskName] = text.split(" ");
-        if (contentId && taskName) {
-            await classifyContent(userId, taskName, replyToken, contentId);
-        } else {
-            await replyToUser(replyToken, { type: "text", text: "分類操作失敗，請重新嘗試。" });
-        }
-    } else {
-        // 存儲文字並提示分類
-        await TempStorageModel.create({
-            userId,
-            content: text,
-            contentType: "text",
-            timestamp: new Date(),
+    } catch (error) {
+        console.error("處理文字消息失敗:", error.message);
+        await replyToUser(replyToken, {
+            type: "text",
+            text: "處理文字消息時發生錯誤，請稍後再試！",
         });
-        await promptUserToClassify(userId, replyToken);
     }
 };
 

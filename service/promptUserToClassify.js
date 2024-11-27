@@ -1,5 +1,6 @@
 const line = require('@line/bot-sdk');
 const replyToUser = require('./replyContent');
+const TempStorageModel = require('../models/tempStorageModel');
 
 const promptUserToClassify = async (userId, replyToken) => {
     try {

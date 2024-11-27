@@ -9,7 +9,7 @@ const handleTaskSelection = require('../service/handleTaskSelection');
 const { classifyContent } = require('../service/classifyContent');
 const promptUserToClassify  = require('../service/promptUserToClassify');
 const taskDetails = require('../service/taskDetails');
-const TempStorageModel = require('../models/tempStorageMpdel');
+const TempStorageModel = require('../models/tempStorageModel');
 const replyToUser = require('../service/replyContent');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;

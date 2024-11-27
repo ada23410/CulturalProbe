@@ -1,4 +1,4 @@
-const TempStorageModel = require('../models/tempStorageMpdel');
+const TempStorageModel = require('../models/tempStorageModel');
 const TaskModel = require('../models/taskModel');
 const replyToUser = require('../service/replyContent');
 

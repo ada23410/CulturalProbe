@@ -32,7 +32,7 @@ const classifyContent = async (userId, taskName, replyToken, contentId = null) =
               text: `已成功將內容分類至任務: ${taskName}`,
           });
       } else {
-          // 處理所有暫存內容的分類
+          // 查找所有暫存內容進行分類
           const tempContents = await TempStorageModel.find({ userId });
 
           if (tempContents.length === 0) {
@@ -58,7 +58,7 @@ const classifyContent = async (userId, taskName, replyToken, contentId = null) =
 
           await replyToUser(replyToken, {
               type: "text",
-              text: `已成功將暫存內容分類至任務: ${taskName}`,
+              text: `已成功將所有暫存內容分類至任務: ${taskName}`,
           });
       }
   } catch (error) {

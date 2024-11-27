@@ -15,21 +15,14 @@ const promptUserToClassify = async (userId, replyToken) => {
         }
 
         // 生成 Quick Reply 選項
-        const quickReplyOptions = tempContents.map((temp, index) => {
-            let label = "";
-            if (temp.contentType === "audio") label = `音訊 ${index + 1}`;
-            else if (temp.contentType === "text") label = `文字 ${index + 1}`;
-            else if (temp.contentType === "image") label = `圖片 ${index + 1}`;
-
-            return {
-                type: "action",
-                action: {
-                    type: "message",
-                    label: label,
-                    text: `分類內容 ${temp._id}`,
-                },
-            };
-        });
+        const quickReplyOptions = tempContents.map((temp, index) => ({
+            type: "action",
+            action: {
+                type: "message",
+                label: `${temp.contentType === "audio" ? "音訊" : temp.contentType === "text" ? "文字" : "圖片"} ${index + 1}`,
+                text: `分類內容 ${temp._id}`,
+            },
+        }));
 
         await replyToUser(replyToken, {
             type: "text",

@@ -78,12 +78,35 @@ const handleTextMessage = async (text, userId, replyToken) => {
     } else if (text.startsWith("分類內容")) {
         const [, contentId] = text.split(" ");
         if (contentId) {
-            await classifyContent(userId, null, replyToken, contentId);
+            // 提示用戶選擇分類任務名稱
+            const quickReplyOptions = taskDetails.map(task => ({
+                type: "action",
+                action: {
+                    type: "message",
+                    label: task.taskName,
+                    text: `分類任務 ${contentId} ${task.taskName}`,
+                },
+            }));
+
+            await replyToUser(replyToken, {
+                type: "text",
+                text: "請選擇任務名稱進行分類：",
+                quickReply: {
+                    items: quickReplyOptions,
+                },
+            });
         } else {
             await replyToUser(replyToken, { type: "text", text: "無法識別要分類的內容。" });
         }
+    } else if (text.startsWith("分類任務")) {
+        const [, contentId, taskName] = text.split(" ");
+        if (contentId && taskName) {
+            await classifyContent(userId, taskName, replyToken, contentId);
+        } else {
+            await replyToUser(replyToken, { type: "text", text: "分類操作失敗，請重新嘗試。" });
+        }
     } else {
-        // 非指令文字訊息，存儲並提示分類
+        // 存儲文字並提示分類
         await TempStorageModel.create({
             userId,
             content: text,

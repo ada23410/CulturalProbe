@@ -47,9 +47,20 @@ const handleLineWebhook = async (req, res) => {
             const taskName = text.replace("詳細說明-", "");
             const taskDetail = taskDetails.find((task) => task.taskName === taskName);
             if (taskDetail) {
+              // 將詳細說明組合成一段文字
+              let detailedMessage = `${taskDetail.description.instructions}\n\n`;
+              
+              taskDetail.description.sections.forEach((section, index) => {
+                  detailedMessage += `${index + 1}. ${section.title}\n`;
+                  detailedMessage += `- 詳細說明: ${section.details}\n`;
+                  detailedMessage += `- 範例: ${section.example}\n\n`;
+              });
+
+              detailedMessage += `最後步驟: ${taskDetail.description.finalStep}`;
+
               await replyToUser(replyToken, {
-                type: "text",
-                text: taskDetail.description.instructions,
+                  type: "text",
+                  text: detailedMessage,
               });
             } else {
               await replyToUser(replyToken, {

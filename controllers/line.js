@@ -7,6 +7,7 @@ const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur
 const { fetchContent } = require('../service/getContent'); // 獲取多媒體內容
 const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
+const { handleTaskSelection } = require('../service/handleTaskSelection');
 const { classifyContent } = require('../service/classifyContent');
 const pushToUser = require('../service/pushContent');
 const MediaModel = require('../models/mediaModel'); // media Model
@@ -58,6 +59,7 @@ const handleLineWebhook = async (req, res) => {
                   }
               } else if(text.startsWith("選擇任務")) { 
                 const taskName = text.replace("選擇任務 ", "").trim();
+                await handleTaskSelection(userId, replyToken);
                 await classifyContent(userId, taskName, replyToken);
               } else {
                 await saveText(userId, text);
@@ -98,14 +100,6 @@ const handleLineWebhook = async (req, res) => {
             const imgurLink = await uploadToImgur(base64Content);
             console.log('圖片已上傳到 Imgur:', imgurLink);
 
-            // 儲存圖片連結到資料庫
-            // const imageMessage = new MediaModel({
-            //   userId,
-            //   messageType: 'image',
-            //   imgurLink,
-            // });
-
-            // await imageMessage.save();
             await TempStorageModel.create({
               userId,
               content: imgurLink,

@@ -1,8 +1,5 @@
 const line = require('@line/bot-sdk');
 const replyToUser = require('./replyContent');
-const client = new line.messagingApi.MessagingApiClient({
-    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-});
 
 // 處理任務相關邏輯
 const handleTasks = async (replyToken) => {

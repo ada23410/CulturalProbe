@@ -39,40 +39,38 @@ const handleLineWebhook = async (req, res) => {
         // 處理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
-          try {
-              if (text.startsWith("查看任務")) {
-                await handleTasks(replyToken);
-              } else if (text.startsWith("詳細說明-")) {
-                  // 提取任務名稱
-                  const taskName = text.replace("詳細說明-", "");
-                  if (taskDetails[taskName]) {
-                      await replyToUser(replyToken, {
-                          type: "text",
-                          text: taskDetails[taskName],
-                      });
-                  } else {
-                      await replyToUser(replyToken, {
-                          type: "text",
-                          text: "抱歉，無法找到對應的任務詳細說明。",
-                      });
-                  }
-              } else if(text.startsWith("選擇任務")) { 
-                const taskName = text.replace("選擇任務 ", "").trim();
-                await handleTaskSelection(userId, replyToken);
-                await classifyContent(userId, taskName, replyToken);
-              } else {
-                await saveText(userId, text);
-                await replyToUser(replyToken, {
-                  type: "text",
-                  text: `您的訊息已儲存: ${text}`,
-                });
-              }
-          } catch (error) {
-              console.error("處理消息失敗:", error.message);
+          
+          if (text === "查看任務") {
+            await handleTasks(replyToken);
+          } else if (text.startsWith("詳細說明-")) {
+            const taskName = text.replace("詳細說明-", "");
+            const taskDetail = taskDetails[taskName];
+            if (taskDetail) {
               await replyToUser(replyToken, {
                 type: "text",
-                text: "處理消息時發生錯誤，請稍後再試！",
+                text: taskDetail,
               });
+            } else {
+              await replyToUser(replyToken, {
+                type: "text",
+                text: "抱歉，找不到對應的任務詳細說明。",
+              });
+            }
+          } else if (text === "選擇任務") {
+            await handleTaskSelection(replyToken); // 顯示 Quick Reply
+          } else if (Object.keys(taskDetails).includes(text)) {
+            // 用戶選擇任務後進行分類
+            await classifyContent(userId, text, replyToken);
+            await replyToUser(replyToken, {
+              type: "text",
+              text: `您的內容已成功分類到「${text}」任務。`,
+            });
+          } else {
+            await saveText(userId, text);
+            await replyToUser(replyToken, {
+              type: "text",
+              text: `您的訊息已儲存: ${text}`,
+            });
           }
         } else if (messageType === 'image') {
           const messageId = event.message.id;
@@ -151,7 +149,6 @@ const handleLineWebhook = async (req, res) => {
       }
     }
   }
-
   res.status(200).send('OK');
 };
 

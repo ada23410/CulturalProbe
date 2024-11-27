@@ -9,17 +9,18 @@ const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
 const handleTaskSelection = require('../service/handleTaskSelection');
 const { classifyContent } = require('../service/classifyContent');
+const taskDetails = require('../service/taskDetails'); 
 const MediaModel = require('../models/mediaModel'); // media Model
 const TempStorageModel = require('../models/tempStorageMpdel'); // 引入暫存區模型
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
-const taskDetails = {
-  "每日活動紀錄": "每日活動紀錄是一個用於追蹤您日常活動的工具，幫助您更好地瞭解自己的生活模式。",
-  "情境紀錄卡": "情境紀錄卡用於記錄特定情境下的詳細信息，幫助您分析和改進應對方式。",
-  "社交情境日記": "社交情境日記是一個日記工具，用於反思和記錄您在社交場合中的行為與感受。",
-  "感受連連看": "感受連連看是一個有趣的活動，幫助您聯繫日常感受與情境之間的關係。",
-};
+// const taskDetails = {
+//   "每日活動紀錄": "每日活動紀錄是一個用於追蹤您日常活動的工具，幫助您更好地瞭解自己的生活模式。",
+//   "情境紀錄卡": "情境紀錄卡用於記錄特定情境下的詳細信息，幫助您分析和改進應對方式。",
+//   "社交情境日記": "社交情境日記是一個日記工具，用於反思和記錄您在社交場合中的行為與感受。",
+//   "感受連連看": "感受連連看是一個有趣的活動，幫助您聯繫日常感受與情境之間的關係。",
+// };
 
 const handleLineWebhook = async (req, res) => { 
   const events = req.body.events; 
@@ -44,11 +45,11 @@ const handleLineWebhook = async (req, res) => {
             await handleTasks(replyToken);
           } else if (text.startsWith("詳細說明-")) {
             const taskName = text.replace("詳細說明-", "");
-            const taskDetail = taskDetails[taskName];
+            const taskDetail = taskDetails.find((task) => task.taskName === taskName);
             if (taskDetail) {
               await replyToUser(replyToken, {
                 type: "text",
-                text: taskDetail,
+                text: taskDetail.description.instructions,
               });
             } else {
               await replyToUser(replyToken, {
@@ -57,9 +58,8 @@ const handleLineWebhook = async (req, res) => {
               });
             }
           } else if (text === "選擇任務") {
-            await handleTaskSelection(userId, replyToken); // 顯示 Quick Reply
-          } else if (Object.keys(taskDetails).includes(text)) {
-            // 用戶選擇任務後進行分類
+            await handleTaskSelection(userId, replyToken);
+          } else if (taskDetails.some((task) => task.taskName === text)) {
             await classifyContent(userId, text, replyToken);
             await replyToUser(replyToken, {
               type: "text",

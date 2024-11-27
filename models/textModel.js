@@ -8,6 +8,9 @@ const TextSchema = new mongoose.Schema(
             type: Date, 
             default: Date.now 
         }
+    },
+    {
+        versionKey: false // 去除資料庫欄位的__v
     }
 )
 

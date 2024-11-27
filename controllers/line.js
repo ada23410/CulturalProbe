@@ -9,7 +9,6 @@ const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
 const handleTaskSelection = require('../service/handleTaskSelection');
 const { classifyContent } = require('../service/classifyContent');
-const pushToUser = require('../service/pushContent');
 const MediaModel = require('../models/mediaModel'); // media Model
 const TempStorageModel = require('../models/tempStorageMpdel'); // 引入暫存區模型
 
@@ -107,7 +106,7 @@ const handleLineWebhook = async (req, res) => {
             });
 
             // 回覆用戶
-            await pushToUser(replyToken, {
+            await replyToUser(replyToken, {
               type: "text",
               text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
             });

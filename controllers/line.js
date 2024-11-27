@@ -7,6 +7,7 @@ const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
 const handleTaskSelection = require('../service/handleTaskSelection');
 const { classifyContent } = require('../service/classifyContent');
+const { promptUserToClassify } = require('../service/promptUserToClassify');
 const taskDetails = require('../service/taskDetails');
 const TempStorageModel = require('../models/tempStorageMpdel');
 const replyToUser = require('../service/replyContent');
@@ -86,6 +87,7 @@ const handleTextMessage = async (text, userId, replyToken) => {
             timestamp: new Date(),
         });
         await replyToUser(replyToken, { type: "text", text: `您的文字訊息已記錄，請稍後分類！` });
+        await promptUserToClassify(userId, replyToken);
     }
 };
 
@@ -115,6 +117,7 @@ const handleImageMessage = async (messageId, userId, replyToken) => {
             { type: "text", text: "圖片已收到，正在處理，請稍候..." },
             { type: "text", text: `圖片已成功上傳到 Imgur: ${imgurLink}` },
         ]);
+        await promptUserToClassify(userId, replyToken);
     } catch (error) {
         console.error("圖片處理失敗:", error.message);
         await replyToUser(replyToken, { type: "text", text: "處理圖片時發生錯誤，請稍後再試！" });
@@ -142,6 +145,7 @@ const handleAudioMessage = async (messageId, userId, replyToken) => {
             type: "text",
             text: `音訊已成功上傳到 Firebase: ${firebaseUrl}，已記錄到未分類任務中。`,
         });
+        await promptUserToClassify(userId, replyToken);
     } catch (error) {
         console.error("音訊處理失敗:", error.message);
         await replyToUser(replyToken, { type: "text", text: "處理音訊時發生錯誤，請稍後再試！" });

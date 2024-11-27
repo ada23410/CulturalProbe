@@ -79,7 +79,7 @@ const handleTextMessage = async (text, userId, replyToken) => {
             case "聯繫客服":
                 await replyToUser(replyToken, {
                     type: "text",
-                    text: "如果您需要幫助，請聯繫我們的客服。\nEmail: ada10050616@gmail.com\n電話: 0930510210",
+                    text: "如果您需要幫助，請聯繫我們的客服。\nEmail: ada10050616@gmail.com\n電話: 0930510214",
                 });
                 break;
 

@@ -39,7 +39,7 @@ const handleLineWebhook = async (req, res) => {
         // 處理文字消息
         if (messageType === 'text') {
           const text = event.message.text;
-          
+
           if (text === "查看任務") {
             await handleTasks(replyToken);
           } else if (text.startsWith("詳細說明-")) {
@@ -57,7 +57,7 @@ const handleLineWebhook = async (req, res) => {
               });
             }
           } else if (text === "選擇任務") {
-            await handleTaskSelection(replyToken); // 顯示 Quick Reply
+            await handleTaskSelection(userId, replyToken); // 顯示 Quick Reply
           } else if (Object.keys(taskDetails).includes(text)) {
             // 用戶選擇任務後進行分類
             await classifyContent(userId, text, replyToken);

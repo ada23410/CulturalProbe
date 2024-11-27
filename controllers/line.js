@@ -1,194 +1,139 @@
-const dotenv= require('dotenv');
+const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
-const path = require('path');
 const axios = require('axios');
-const { saveText } = require('../service/saveText'); // 保存文字消息
-const { uploadToImgur } = require('../service/uploadImgur'); // 上傳到 Imgur
-const { fetchContent } = require('../service/getContent'); // 獲取多媒體內容
+const { saveText } = require('../service/saveText');
+const { uploadToImgur } = require('../service/uploadImgur');
+const { fetchContent } = require('../service/getContent');
 const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
 const handleTaskSelection = require('../service/handleTaskSelection');
-const { classifyContent } = require('../service/classifyContent');
-const taskDetails = require('../service/taskDetails'); 
-const MediaModel = require('../models/mediaModel'); // media Model
-const TempStorageModel = require('../models/tempStorageMpdel'); // 引入暫存區模型
+const { processAndClassifyMessage } = require('../service/classifyContent');
+const taskDetails = require('../service/taskDetails');
+const replyToUser = require('../service/replyContent');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
-// const taskDetails = {
-//   "每日活動紀錄": "每日活動紀錄是一個用於追蹤您日常活動的工具，幫助您更好地瞭解自己的生活模式。",
-//   "情境紀錄卡": "情境紀錄卡用於記錄特定情境下的詳細信息，幫助您分析和改進應對方式。",
-//   "社交情境日記": "社交情境日記是一個日記工具，用於反思和記錄您在社交場合中的行為與感受。",
-//   "感受連連看": "感受連連看是一個有趣的活動，幫助您聯繫日常感受與情境之間的關係。",
-// };
+const handleLineWebhook = async (req, res) => {
+    const events = req.body.events;
 
-const handleLineWebhook = async (req, res) => { 
-  const events = req.body.events; 
+    for (const event of events) {
+        console.log('接收到的事件:', JSON.stringify(event, null, 2));
 
-  for (const event of events) {// 遍歷Line所收到的訊息
-    console.log('接收到的事件:', JSON.stringify(event, null, 2));
-    if (!event || !event.type || !event.message) {
-      console.error('Invalid event structure:', event);
-      continue; // 跳過不完整的事件
-    }
-    if (event.type === 'message') { // 是否為文字訊息
-      const messageType = event.message.type;
-      const userId = event.source.userId;
-      const replyToken = event.replyToken;
-
-      try {
-        // 處理文字消息
-        if (messageType === 'text') {
-          const text = event.message.text;
-
-          if (text === "查看任務") {
-            await handleTasks(replyToken);
-          } else if (text.startsWith("詳細說明-")) {
-            const taskName = text.replace("詳細說明-", "");
-            const taskDetail = taskDetails.find((task) => task.taskName === taskName);
-            if (taskDetail) {
-              // 將詳細說明組合成一段文字
-              let detailedMessage = `${taskDetail.description.instructions}\n\n`;
-              
-              taskDetail.description.sections.forEach((section, index) => {
-                  detailedMessage += `${index + 1}. ${section.title}\n`;
-                  detailedMessage += `- 詳細說明: ${section.details}\n`;
-                  detailedMessage += `- 範例: ${section.example}\n\n`;
-              });
-
-              detailedMessage += `最後步驟: ${taskDetail.description.finalStep}`;
-
-              await replyToUser(replyToken, {
-                  type: "text",
-                  text: detailedMessage,
-              });
-            } else {
-              await replyToUser(replyToken, {
-                type: "text",
-                text: "抱歉，找不到對應的任務詳細說明。",
-              });
-            }
-          } else if (text === "選擇任務") {
-            await handleTaskSelection(userId, replyToken);
-          } else if (taskDetails.some((task) => task.taskName === text)) {
-            await classifyContent(userId, text, replyToken);
-            await replyToUser(replyToken, {
-              type: "text",
-              text: `您的內容已成功分類到「${text}」任務。`,
-            });
-          } else {
-            await saveText(userId, text);
-            await replyToUser(replyToken, {
-              type: "text",
-              text: `您的訊息已儲存: ${text}`,
-            });
-          }
-        } else if (messageType === 'image') {
-          const messageId = event.message.id;
-          console.log(`處理圖片訊息, messageId: ${messageId}`);
-          try{
-            // 從 LINE 獲取圖片內容
-            const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
-            const response = await axios.get(url, {
-              headers: {
-                Authorization: `Bearer ${LINE_ACCESS_TOKEN}`,
-              },
-              responseType: 'arraybuffer',
-            });
-
-            console.log('成功獲取圖片內容，大小:', response.headers['content-length']);
-            const base64Content = Buffer.from(response.data).toString('base64');
-
-            // 上傳到 Imgur
-            const imgurLink = await uploadToImgur(base64Content);
-            console.log('圖片已上傳到 Imgur:', imgurLink);
-
-            await TempStorageModel.create({
-              userId,
-              content: imgurLink,
-              contentType: "image",
-            });
-
-            // 回覆用戶
-            await replyToUser(replyToken,[
-              {
-                type: "text",
-                text: "圖片已收到，正在處理，請稍候...",
-              },
-              {
-                type: "text",
-                text: `圖片已成功上傳到 Imgur: ${imgurLink}`,
-              }
-            ]);
-
-            console.log('圖片訊息已保存到資料庫:', imgurLink);
-          } catch(error) {
-            console.error("圖片處理失敗:", error.message);
-          }
-        } else if (messageType === 'audio') {
-          const messageId = event.message.id;
-          console.log(`處理音訊訊息, messageId: ${messageId}`);
-
-          // 獲取音訊內容
-          const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-          console.log('成功獲取音訊內容，大小:', buffer.length);
-
-          // 上傳音訊到 Firebase
-          const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
-          const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
-          console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
-
-          // 回覆用戶
-          await replyToUser(replyToken,{
-            type: "text",
-            text: `音訊已成功上傳到 Firebase: ${firebaseUrl}`
-          });
-
-          // 儲存音訊到資料庫
-          await MediaModel.create({
-            userId,
-            messageType: 'audio',
-            mediaUrl: firebaseUrl,
-          });
-          console.log('音訊訊息已保存到資料庫:', firebaseUrl);
+        // 驗證事件
+        if (!event || !event.type || !event.message) {
+            console.error('Invalid event structure:', event);
+            continue;
         }
-      } catch (error) {
-        console.error('消息處理失敗:', error.message);
-        await replyToUser(replyToken,{
-          type: "text",
-          text: "處理音訊時發生錯誤，請稍後再試！",
-        });
-      }
+
+        // 處理文字或多媒體消息
+        if (event.type === 'message') {
+            const { type: messageType, text, id: messageId } = event.message;
+            const userId = event.source.userId;
+            const replyToken = event.replyToken;
+
+            try {
+                // 根據消息類型處理
+                switch (messageType) {
+                    case 'text':
+                        await handleTextMessage(text, userId, replyToken);
+                        break;
+                    case 'image':
+                        await handleImageMessage(messageId, userId, replyToken);
+                        break;
+                    case 'audio':
+                        await handleAudioMessage(messageId, userId, replyToken);
+                        break;
+                    default:
+                        console.warn(`未知的消息類型: ${messageType}`);
+                }
+            } catch (error) {
+                console.error('消息處理失敗:', error.message);
+                await replyToUser(replyToken, {
+                    type: "text",
+                    text: "處理消息時發生錯誤，請稍後再試！",
+                });
+            }
+        }
     }
-  }
-  res.status(200).send('OK');
+
+    res.status(200).send('OK');
 };
 
-// 回覆用户的方法
-const replyToUser = async (replyToken, messages) => {
-  const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+// 處理文字消息
+const handleTextMessage = async (text, userId, replyToken) => {
+    if (text === "查看任務") {
+        await handleTasks(replyToken);
+    } else if (text.startsWith("詳細說明-")) {
+        const taskName = text.replace("詳細說明-", "");
+        const taskDetail = taskDetails.find(task => task.taskName === taskName);
+        if (taskDetail) {
+            // 拼接詳細說明
+            const detailedMessage = formatTaskDetails(taskDetail);
+            await replyToUser(replyToken, { type: "text", text: detailedMessage });
+        } else {
+            await replyToUser(replyToken, { type: "text", text: "找不到對應的任務詳細說明。" });
+        }
+    } else if (text === "選擇任務") {
+        await handleTaskSelection(userId, replyToken);
+    } else if (taskDetails.some(task => task.taskName === text)) {
+        await processAndClassifyMessage(userId, text, replyToken);
+    } else {
+        // 保存其他文字消息
+        await saveText(userId, text);
+        await replyToUser(replyToken, { type: "text", text: `您的訊息已儲存: ${text}` });
+    }
+};
 
-  const headers = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${LINE_ACCESS_TOKEN}`,
-  };
+// 處理圖片消息
+const handleImageMessage = async (messageId, userId, replyToken) => {
+    try {
+        const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${LINE_ACCESS_TOKEN}` },
+            responseType: 'arraybuffer',
+        });
 
-  try {
-      // 發送 POST 請求
-      const response = await axios.post(
-          'https://api.line.me/v2/bot/message/reply',
-          {
-              replyToken,
-              messages: Array.isArray(messages) ? messages : [messages], // 確保傳入的 messages 是陣列
-          },
-          { headers }
-      );
+        const base64Content = Buffer.from(response.data).toString('base64');
+        const imgurLink = await uploadToImgur(base64Content);
 
-      console.log("成功回覆用戶:", response.status);
-  } catch (error) {
-      console.error("回覆用戶失敗:", error.response?.data || error.message);
-      throw new Error("回覆用戶時發生錯誤");
-  }
+        console.log('圖片已上傳到 Imgur:', imgurLink);
+
+        await replyToUser(replyToken, [
+            { type: "text", text: "圖片已收到，正在處理，請稍候..." },
+            { type: "text", text: `圖片已成功上傳到 Imgur: ${imgurLink}` }
+        ]);
+    } catch (error) {
+        console.error("圖片處理失敗:", error.message);
+        await replyToUser(replyToken, { type: "text", text: "處理圖片時發生錯誤，請稍後再試！" });
+    }
+};
+
+// 處理音訊消息
+const handleAudioMessage = async (messageId, userId, replyToken) => {
+    try {
+        const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
+        const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
+        const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
+
+        console.log('音訊已成功上傳到 Firebase:', firebaseUrl);
+
+        await replyToUser(replyToken, { type: "text", text: `音訊已成功上傳到 Firebase: ${firebaseUrl}` });
+    } catch (error) {
+        console.error("音訊處理失敗:", error.message);
+        await replyToUser(replyToken, { type: "text", text: "處理音訊時發生錯誤，請稍後再試！" });
+    }
+};
+
+// 格式化任務詳細說明
+const formatTaskDetails = (taskDetail) => {
+    let detailedMessage = `${taskDetail.description.instructions}\n\n`;
+    taskDetail.description.sections.forEach((section, index) => {
+        detailedMessage += `${index + 1}. ${section.title}\n`;
+        detailedMessage += `- 詳細說明: ${section.details}\n`;
+        detailedMessage += `- 範例: ${section.example}\n\n`;
+    });
+    detailedMessage += `最後步驟: ${taskDetail.description.finalStep}`;
+    return detailedMessage;
 };
 
 module.exports = { handleLineWebhook };

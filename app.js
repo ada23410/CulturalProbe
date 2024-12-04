@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const schedule = require('./service/schedule');
+// const schedule = require('./service/schedule');
 
 // 資料庫設定
 const mongoose = require('mongoose');
@@ -27,7 +27,7 @@ const DB = process.env.DATABASE.replace(
 mongoose.connect(DB)
         .then(res => {
           console.log("連線資料成功");
-          schedule();
+          // schedule();
         })
         .catch((error)=> {console.log("資料連線失敗",error)}) 
 

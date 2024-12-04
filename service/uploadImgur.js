@@ -6,14 +6,14 @@ const uploadToImgur = async (base64Image) => {
     const client = new ImgurClient({
       clientId: process.env.IMGUR_CLIENTID,
       clientSecret: process.env.IMGUR_CLIENT_SECRET,
-      refreshToken: process.env.IMGUR_REFRESH_TOKEN, // 可选
+      refreshToken: process.env.IMGUR_REFRESH_TOKEN,
     });
 
     // 上傳圖片到 Imgur
     const response = await client.upload({
       image: base64Image,
       type: 'base64',
-      album: process.env.IMGUR_ALBUM_ID, // 可选
+      album: process.env.IMGUR_ALBUM_ID,
     });
 
     // 檢查上傳結果是否成功

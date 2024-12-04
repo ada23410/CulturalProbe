@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const schedule = require('./service/schedule');
 
 // 資料庫設定
 const mongoose = require('mongoose');

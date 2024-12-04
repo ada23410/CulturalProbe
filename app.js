@@ -25,7 +25,10 @@ const DB = process.env.DATABASE.replace(
 
 // 連結DB
 mongoose.connect(DB)
-        .then(res => console.log("連線資料成功"))
+        .then(res => {
+          console.log("連線資料成功");
+          schedule();
+        })
         .catch((error)=> {console.log("資料連線失敗",error)}) 
 
 // view engine setup

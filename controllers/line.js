@@ -5,7 +5,6 @@ const { uploadToImgur } = require('../service/uploadImgur');
 const { fetchContent } = require('../service/getContent');
 const { uploadAudioToFirebase } = require('../service/uploadFirebase');
 const { handleTasks } = require('../service/handleTasks');
-const handleTaskSelection = require('../service/handleTaskSelection');
 const { classifyContent } = require('../service/classifyContent');
 const promptUserToClassify  = require('../service/promptUserToClassify');
 const taskDetails = require('../service/taskDetails');

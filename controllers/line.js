@@ -12,7 +12,6 @@ const appSuccess = require('../service/appSuccess');
 const appError = require('../service/appError');
 const TempStorageModel = require('../models/tempStorageModel');
 const replyToUser = require('../service/replyContent');
-const retryRequest = require('../service/retry');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -52,15 +51,7 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
     if (!text) return next(appError(400, 'Text message content is empty', next));
 
     if (text === '查看任務') {
-        try {
-            // 使用重試機制確保成功獲取任務
-            await retryRequest(async () => {
-                await handleTasks(replyToken);
-            }, 3, 2000);
-        } catch (error) {
-            console.error("查看任務失敗:", error.message);
-            await replyToUser(replyToken, { type: "text", text: "暫時無法查看任務，請稍後再試！" });
-        }
+        await handleTasks(replyToken);
     } else if (text === '操作指南') {
         await replyToUser(replyToken, {
             type: 'text',

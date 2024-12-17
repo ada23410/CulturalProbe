@@ -51,34 +51,17 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
     if (!text) return next(appError(400, 'Text message content is empty', next));
 
     if (text === '查看任務') {
-         // 立即回覆等待提示
-        await replyToUser(replyToken, { type: 'text', text: '請稍等，正在為您準備內容...' });
-
-         // 等待 1 秒後執行任務處理
-        setTimeout(async () => {
-            try {
-                await handleTasks(replyToken);
-            } catch (error) {
-                console.error('查看任務失敗:', error.message);
-                await replyToUser(replyToken, { type: 'text', text: '任務查詢失敗，請稍後再試！' });
-            }
-        }, 1500); 
+        await handleTasks(replyToken);
     } else if (text === '操作指南') {
-        await replyToUser(replyToken, { type: 'text', text: '請稍等，正在為您準備內容...' });
-
-        setTimeout(async () => {
-            await replyToUser(replyToken, {
-                type: 'text',
-                text: '📋 操作指南：\n1. 發送消息進行記錄。\n2. 根據提示完成分類。\n3. 輸入「查看任務」隨時查看任務進度。\n若有疑問，請聯繫客服。',
-            });
-        }, 1500); 
+        await replyToUser(replyToken, {
+            type: 'text',
+            text: '歡迎使用！請按照以下步驟完成操作：\n1. 發送消息進行記錄。\n2. 根據提示完成分類。\n3. 您可以隨時輸入「查看任務」查看當前任務。',
+        });
     } else if (text === '聯繫客服') {
-        setTimeout(async () => {
-            await replyToUser(replyToken, {
-                type: 'text',
-                text: '📞 聯繫客服：\n🔹 Email: ada10050616@gmail.com\n🔹 電話: 0930510214\n若您有任何疑問，請隨時聯繫我們！',
-            });
-        }, 1500); 
+        await replyToUser(replyToken, {
+            type: 'text',
+            text: '如果您需要幫助，請聯繫我們的客服。\nEmail: ada10050616@gmail.com\n電話: 0930510214',
+        });
     } else if (text.startsWith('詳細說明-')) {
         const taskName = text.replace('詳細說明-', '');
         const taskDetail = taskDetails.find(task => task.taskName === taskName);
@@ -116,71 +99,51 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
             await replyToUser(replyToken, { type: 'text', text: '分類操作失敗，請重新嘗試。' });
         }
     } else {
-        await replyToUser(replyToken, { type: 'text', text: '收到您的訊息，請稍候...' });
-        setTimeout(async () => {
-            await TempStorageModel.create({
-                userId,
-                content: text,
-                contentType: 'text',
-                timestamp: new Date(),
-            });
-            await promptUserToClassify(userId, replyToken);
-        }, 500);
+        await TempStorageModel.create({
+            userId,
+            content: text,
+            contentType: 'text',
+            timestamp: new Date(),
+        });
+        await promptUserToClassify(userId, replyToken);
     }
 };
 
 // 處理圖片消息
 const handleImageMessage = async (messageId, userId, replyToken, next) => {
-    await replyToUser(replyToken, { type: 'text', text: '圖片已收到，請稍候...' });
-    setTimeout(async () => {
-        try {
-            const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
-            const response = await axios.get(url, {
-                headers: { Authorization: `Bearer ${LINE_ACCESS_TOKEN}` },
-                responseType: 'arraybuffer',
-            });
+    const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+    const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${LINE_ACCESS_TOKEN}` },
+        responseType: 'arraybuffer',
+    });
 
-            const base64Content = Buffer.from(response.data).toString('base64');
-            const imgurLink = await uploadToImgur(base64Content);
+    const base64Content = Buffer.from(response.data).toString('base64');
+    const imgurLink = await uploadToImgur(base64Content);
 
-            await TempStorageModel.create({
-                userId,
-                content: imgurLink,
-                contentType: 'image',
-                timestamp: new Date(),
-            });
+    await TempStorageModel.create({
+        userId,
+        content: imgurLink,
+        contentType: 'image',
+        timestamp: new Date(),
+    });
 
-            await promptUserToClassify(userId, replyToken);
-        } catch (error) {
-            console.error('圖片處理失敗:', error.message);
-            await replyToUser(replyToken, { type: 'text', text: '圖片處理時發生錯誤，請稍後再試！' });
-        }
-    }, 1000); 
+    await promptUserToClassify(userId, replyToken);
 };
 
 // 處理音訊消息
 const handleAudioMessage = async (messageId, userId, replyToken, next) => {
-    await replyToUser(replyToken, { type: 'text', text: '音訊已收到，請稍候...' });
+    const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
+    const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
+    const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
 
-    setTimeout(async () => {
-        try {
-            const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-            const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
-            const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
+    await TempStorageModel.create({
+        userId,
+        content: firebaseUrl,
+        contentType: 'audio',
+        timestamp: new Date(),
+    });
 
-            await TempStorageModel.create({
-                userId,
-                content: firebaseUrl,
-                contentType: 'audio',
-                timestamp: new Date(),
-            });
-
-            await promptUserToClassify(userId, replyToken);
-        } catch (error) {
-            console.error('音訊處理失敗:', error.message);
-            await replyToUser(replyToken, { type: 'text', text: '音訊處理時發生錯誤，請稍後再試！' });
-        }
-    }, 1000); 
+    await promptUserToClassify(userId, replyToken);
 };
 
 

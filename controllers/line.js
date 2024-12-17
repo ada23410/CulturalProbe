@@ -12,6 +12,7 @@ const appSuccess = require('../service/appSuccess');
 const appError = require('../service/appError');
 const TempStorageModel = require('../models/tempStorageModel');
 const replyToUser = require('../service/replyContent');
+const retryRequest = require('../service/retryRequest');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -30,13 +31,19 @@ const handleLineWebhook = async (req, res, next) => {
 
             switch (messageType) {
                 case 'text':
-                    await handleTextMessage(text, userId, replyToken, next);
+                    await retryRequest(async () => {
+                        await handleTextMessage(text, userId, replyToken, next);
+                    }, 3, 2000);
                     break;
                 case 'image':
-                    await handleImageMessage(messageId, userId, replyToken, next);
+                    await retryRequest(async () => {
+                        await handleImageMessage(messageId, userId, replyToken, next);
+                    }, 3, 2000);
                     break;
                 case 'audio':
-                    await handleAudioMessage(messageId, userId, replyToken, next);
+                    await retryRequest(async () => {
+                        await handleAudioMessage(messageId, userId, replyToken, next);
+                    }, 3, 2000);
                     break;
                 default:
                     await replyToUser(replyToken, { type: "text", text: "不支持的消息類型。" });

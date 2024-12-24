@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const { startKeepAlive } = require('./service/keepAlive');
 // const schedule = require('./service/schedule');
 
 // 資料庫設定
@@ -35,6 +36,7 @@ mongoose.connect(DB)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+startKeepAlive();
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

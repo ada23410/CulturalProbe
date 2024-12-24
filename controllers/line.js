@@ -13,6 +13,7 @@ const appError = require('../service/appError');
 const TempStorageModel = require('../models/tempStorageModel');
 const replyToUser = require('../service/replyContent');
 const retryRequest = require('../service/retryRequest');
+// const imageMessage = require('../service/imagemap');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -59,11 +60,13 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
 
     if (text === '查看任務') {
         await handleTasks(replyToken);
-    } else if (text === '操作指南') {
-        await replyToUser(replyToken, {
-            type: 'text',
-            text: '歡迎使用！請按照以下步驟完成操作：\n1. 發送消息進行記錄。\n2. 根據提示完成分類。\n3. 您可以隨時輸入「查看任務」查看當前任務。',
-        });
+    } else if (text === '操作步驟') {
+        const imageMessage = {
+            type: "image",
+            originalContentUrl: "https://i.imgur.com/UhcnBfR.jpeg",
+            previewImageUrl: "https://i.imgur.com/UhcnBfR.jpeg",
+        };
+        await replyToUser(replyToken, imageMessage);
     } else if (text === '聯繫客服') {
         await replyToUser(replyToken, {
             type: 'text',

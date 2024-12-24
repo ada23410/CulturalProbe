@@ -13,7 +13,6 @@ const appError = require('../service/appError');
 const TempStorageModel = require('../models/tempStorageModel');
 const replyToUser = require('../service/replyContent');
 const retryRequest = require('../service/retryRequest');
-// const imageMessage = require('../service/imagemap');
 
 const LINE_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -63,8 +62,8 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
     } else if (text === '操作步驟') {
         const imageMessage = {
             type: "image",
-            originalContentUrl: "https://i.imgur.com/UhcnBfR.jpeg",
-            previewImageUrl: "https://i.imgur.com/UhcnBfR.jpeg",
+            originalContentUrl: "https://i.imgur.com/DrhOeRx.jpeg",
+            previewImageUrl: "https://i.imgur.com/DrhOeRx.jpeg",
         };
         await replyToUser(replyToken, imageMessage);
     } else if (text === '聯繫客服') {

@@ -161,7 +161,7 @@ const formatTaskDetails = (taskDetail) => {
     let detailedMessage = `${taskDetail.description.instructions}\n\n`;
     taskDetail.description.sections.forEach((section, index) => {
         detailedMessage += `${index + 1}. ${section.title}\n`;
-        detailedMessage += `- 詳細說明: ${section.details}\n`;
+        detailedMessage += `- 詳細說明: ${section.details}\n\n`;
     });
     detailedMessage += `最後步驟: ${taskDetail.description.finalStep}`;
     return detailedMessage;

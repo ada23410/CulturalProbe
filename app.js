@@ -4,7 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { startKeepAlive } = require('./service/keepAlive');
-// const schedule = require('./service/schedule');
 
 // 資料庫設定
 const mongoose = require('mongoose');

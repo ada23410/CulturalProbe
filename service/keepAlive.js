@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Keep-Alive URL 和間隔時間
-const WEB_SERVICE_URL = "https://culturalprobe.onrender.com/api/line/webhook";
+const WEB_SERVICE_URL = "https://culturalprobe.onrender.com";
 const INTERVAL_TIME = 3600000; // 1 小時
 
 const keepAlive = async () => {

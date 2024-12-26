@@ -82,24 +82,33 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
         }
     } else if (text.startsWith('分類內容')) {
         const [, contentId] = text.split(' ');
-        if (contentId) {
-            const quickReplyOptions = taskDetails.map(task => ({
-                type: 'action',
-                action: {
-                    type: 'message',
-                    label: task.taskName,
-                    text: `分類任務 ${contentId} ${task.taskName}`,
-                },
-            }));
 
-            await replyToUser(replyToken, {
-                type: 'text',
-                text: '請選擇任務名稱進行分類：',
-                quickReply: { items: quickReplyOptions },
-            });
-        } else {
+        if (!contentId) {
             await replyToUser(replyToken, { type: 'text', text: '無法識別要分類的內容。' });
+            return;
         }
+    
+        // 查找具體內容
+        const contentToClassify = await TempStorageModel.findOne({ _id: contentId });
+        if (!contentToClassify) {
+            await replyToUser(replyToken, { type: 'text', text: '找不到對應的內容，請重新嘗試。' });
+            return;
+        }
+    
+        const quickReplyOptions = taskDetails.map(task => ({
+            type: 'action',
+            action: {
+                type: 'message',
+                label: task.taskName,
+                text: `分類任務 ${contentId} ${task.taskName}`,
+            },
+        }));
+    
+        await replyToUser(replyToken, {
+            type: 'text',
+            text: `請為以下內容選擇一個任務進行分類：\n${contentToClassify.content}`,
+            quickReply: { items: quickReplyOptions },
+        });
     } else if (text.startsWith('分類任務')) {
         const [, contentId, taskName] = text.split(' ');
         if (contentId && taskName) {

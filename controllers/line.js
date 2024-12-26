@@ -150,39 +150,61 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
 
 // 處理圖片消息
 const handleImageMessage = async (messageId, userId, replyToken, next) => {
-    const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
-    const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${LINE_ACCESS_TOKEN}` },
-        responseType: 'arraybuffer',
-    });
+    try {
+        const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${LINE_ACCESS_TOKEN}` },
+            responseType: 'arraybuffer',
+        });
 
-    const base64Content = Buffer.from(response.data).toString('base64');
-    const imgurLink = await uploadToImgur(base64Content);
+        const base64Content = Buffer.from(response.data).toString('base64');
+        const imgurLink = await uploadToImgur(base64Content);
 
-    await TempStorageModel.create({
-        userId,
-        content: imgurLink,
-        contentType: 'image',
-        timestamp: new Date(),
-    });
+        // 保存圖片消息到資料庫，標記為未分類
+        await TempStorageModel.create({
+            userId,
+            content: imgurLink,
+            contentType: 'image',
+            classified: false, // 確保設置為未分類
+            timestamp: new Date(),
+        });
 
-    await promptUserToClassify(userId, replyToken);
+        // 提示用戶進行分類
+        await promptUserToClassify(userId, replyToken);
+    } catch (error) {
+        console.error("處理圖片消息失敗:", error.message);
+        await replyToUser(replyToken, {
+            type: "text",
+            text: "處理圖片消息時發生錯誤，請稍後再試。",
+        });
+    }
 };
 
 // 處理音訊消息
 const handleAudioMessage = async (messageId, userId, replyToken, next) => {
-    const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
-    const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
-    const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
+    try {
+        const { buffer, contentType } = await fetchContent(messageId, LINE_ACCESS_TOKEN);
+        const fileName = `audio/${messageId.replace(/[^a-zA-Z0-9]/g, '_')}.${contentType.split('/')[1]}`;
+        const firebaseUrl = await uploadAudioToFirebase(buffer, fileName, contentType);
 
-    await TempStorageModel.create({
-        userId,
-        content: firebaseUrl,
-        contentType: 'audio',
-        timestamp: new Date(),
-    });
+        // 保存語音消息到資料庫，標記為未分類
+        await TempStorageModel.create({
+            userId,
+            content: firebaseUrl,
+            contentType: 'audio',
+            classified: false, // 確保設置為未分類
+            timestamp: new Date(),
+        });
 
-    await promptUserToClassify(userId, replyToken);
+        // 提示用戶進行分類
+        await promptUserToClassify(userId, replyToken);
+    } catch (error) {
+        console.error("處理音訊消息失敗:", error.message);
+        await replyToUser(replyToken, {
+            type: "text",
+            text: "處理音訊消息時發生錯誤，請稍後再試。",
+        });
+    }
 };
 
 

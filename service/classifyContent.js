@@ -24,16 +24,16 @@ const classifyContent = async (userId, taskName, replyToken, contentId = null) =
               timestamp: tempContent.timestamp,
           });
 
-          // 刪除暫存數據
-          await TempStorageModel.deleteOne({ _id: contentId });
+          // 更新暫存數據的分類狀態
+          await TempStorageModel.updateOne({ _id: contentId }, { classified: true });
 
           await replyToUser(replyToken, {
               type: "text",
               text: `已成功將內容分類至任務: ${taskName}`,
           });
       } else {
-          // 查找所有暫存內容進行分類
-          const tempContents = await TempStorageModel.find({ userId });
+          // 查找所有未分類的暫存內容進行分類
+          const tempContents = await TempStorageModel.find({ userId, classified: false });
 
           if (tempContents.length === 0) {
               await replyToUser(replyToken, {
@@ -52,13 +52,13 @@ const classifyContent = async (userId, taskName, replyToken, contentId = null) =
                   timestamp: temp.timestamp,
               });
 
-              // 刪除已分類的暫存數據
-              await TempStorageModel.deleteOne({ _id: temp._id });
+              // 更新已分類的暫存數據狀態
+              await TempStorageModel.updateOne({ _id: temp._id }, { classified: true });
           }
 
           await replyToUser(replyToken, {
               type: "text",
-              text: `已成功將所有暫存內容分類至任務: ${taskName}`,
+              text: `已成功將所有未分類的暫存內容分類至任務: ${taskName}`,
           });
       }
   } catch (error) {

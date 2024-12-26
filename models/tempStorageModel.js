@@ -18,6 +18,10 @@ const TempStorageSchema = new mongoose.Schema(
             type: Date, 
             default: Date.now 
         }, 
+        classified: { // 新增 classified 欄位
+            type: Boolean,
+            default: false // 預設為 false 表示未分類
+        },
     },
     {
         versionKey: false // 去除資料庫欄位的__v

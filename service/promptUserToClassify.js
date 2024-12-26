@@ -12,7 +12,8 @@ const getCurrentFormattedDate = () => {
 
 const promptUserToClassify = async (userId, replyToken) => {
     try {
-        const tempContents = await TempStorageModel.find({ userId });
+        // 僅查詢未分類的內容
+        const tempContents = await TempStorageModel.find({ userId, classified: false });
 
         if (tempContents.length === 0) {
             await replyToUser(replyToken, {

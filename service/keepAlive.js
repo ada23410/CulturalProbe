@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // Keep-Alive URL 和間隔時間
 const WEB_SERVICE_URL = "https://culturalprobe.onrender.com";
-const INTERVAL_TIME = 1800000; // .5 小時
+const INTERVAL_TIME = 1800000; // . 小時
 
 const keepAlive = async () => {
     try {

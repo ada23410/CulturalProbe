@@ -71,6 +71,28 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
             type: 'text',
             text: '如果您需要幫助，請聯繫我們的客服。\nEmail: ada10050616@gmail.com\n電話: 0930510214',
         });
+    } else if(text === '分類內容') {
+        const unclassifiedContent = await TempStorageModel.find({ userId, classified: false });
+
+        if (!unclassifiedContent || unclassifiedContent.length === 0) {
+            await replyToUser(replyToken, { type: 'text', text: '目前沒有尚未分類的內容。' });
+            return;
+        }
+
+        const quickReplyOptions = unclassifiedContent.map(content => ({
+            type: 'action',
+            action: {
+                type: 'message',
+                label: content.content.substring(0, 20), // 顯示內容摘要
+                text: `分類內容 ${content._id}`,
+            },
+        }));
+
+        await replyToUser(replyToken, {
+            type: 'text',
+            text: '以下是尚未分類的內容，請選擇一項進行分類：',
+            quickReply: { items: quickReplyOptions },
+        });
     } else if (text.startsWith('詳細說明-')) {
         const taskName = text.replace('詳細說明-', '');
         const taskDetail = taskDetails.find(task => task.taskName === taskName);
@@ -87,14 +109,13 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
             await replyToUser(replyToken, { type: 'text', text: '無法識別要分類的內容。' });
             return;
         }
-    
-        // 查找具體內容
+
         const contentToClassify = await TempStorageModel.findOne({ _id: contentId });
         if (!contentToClassify) {
             await replyToUser(replyToken, { type: 'text', text: '找不到對應的內容，請重新嘗試。' });
             return;
         }
-    
+
         const quickReplyOptions = taskDetails.map(task => ({
             type: 'action',
             action: {
@@ -103,7 +124,7 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
                 text: `分類任務 ${contentId} ${task.taskName}`,
             },
         }));
-    
+
         await replyToUser(replyToken, {
             type: 'text',
             text: `請為以下內容選擇一個任務進行分類：\n${contentToClassify.content}`,

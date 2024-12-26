@@ -110,9 +110,9 @@ const handleTextMessage = async (text, userId, replyToken, next) => {
             return;
         }
 
-        const contentToClassify = await TempStorageModel.findOne({ _id: contentId });
+        const contentToClassify = await TempStorageModel.findOne({ _id: contentId, classified: false });
         if (!contentToClassify) {
-            await replyToUser(replyToken, { type: 'text', text: '找不到對應的內容，請重新嘗試。' });
+            await replyToUser(replyToken, { type: 'text', text: '找不到對應的未分類內容，請重新嘗試。' });
             return;
         }
 
